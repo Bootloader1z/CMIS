@@ -71,27 +71,7 @@
                     var html = '<li class="notification-item">';
                     html += '<i class="' + iconClass + '"></i>';
                     html += '<div>';
-                        html += '<h4>';
-
-if (notification.model === 'App\Models\TasFile') {
-    html += notification.model + ' - Case Contested';
-} else if (notification.model === 'App\Models\Archives') {
-    html += notification.model + ' - Case Archives';
-} else if (notification.model === 'App\Models\TrafficViolation') {
-    html += 'Traffic Violation';
-} else if (notification.model === 'App\Models\ApprehendingOfficer') {
-    html += 'Apprehending Officer';
-} else if (notification.model === 'App\Models\admitted') {
-    html += 'Case Admitted';
-} else if (notification.model === 'App\Models\department') {
-    html += 'Department';
-} else {
-    html += notification.model;
-}
-
-html += '</h4>';
-
-
+                    html += '<h4>' + notification.model + '</h4>';
                     html += '<p>' + notification.description + '</p>';
                     html += '<p style="display:none;">' + notification.details + '</p>';
                     html += '<p>By: ' + notification.user.fullname + '</p>';  

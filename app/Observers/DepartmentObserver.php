@@ -51,7 +51,7 @@ class DepartmentObserver
     protected function logHistory(Department $Department, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
-        $auditTrail->model = Department::class;
+        $auditTrail->model = 'Department';
         $auditTrail->action = $action;
         $auditTrail->field = $field;
         $auditTrail->old_value = $oldValue;

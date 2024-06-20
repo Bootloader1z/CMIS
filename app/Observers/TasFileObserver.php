@@ -51,7 +51,8 @@ class TasFileObserver
     protected function logHistory(TasFile $TasFile, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
-        $auditTrail->model = TasFile::class;
+        $auditTrail->model = 'Case Contested';
+
         $auditTrail->action = $action;
         $auditTrail->field = $field;
         $auditTrail->old_value = $oldValue;
