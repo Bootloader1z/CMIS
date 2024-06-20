@@ -46,6 +46,9 @@ Route::get('/logout', [AuthController::class, 'logoutx'])->name('logout');
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'indexa'])->name('dashboard');
 
+    Route::get('/officers', [DashboardController::class, 'filterOfficer'])->name('officers.index');
+    Route::post('/get-violations', [DashboardController::class, 'getViolations'])->name('get.today');
+
     // =============== ANALYTICS 
 
     Route::get('/analytics', [DashboardController::class, 'analyticsDash'])->name('analytics.index');
@@ -57,7 +60,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/documents/print/{id}', [DashboardController::class, 'printsub'])->name('print.sub');
     Route::get('/contested.cases/reports', [DashboardController::class, 'reportsview'])->name('filterByMonth');
 
- 
+    Route::get('/yearly-data/{year}', [DashboardController::class, 'showYearData'])->name('showYearData');
 
 
 

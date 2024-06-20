@@ -7,7 +7,7 @@ if (!function_exists('getStatusColor')) {
                 return '#99ff99'; // light green
             case 'in-progress':
                 return '#ffffcc'; // light yellow
-            case 'Settled':
+            case 'settled':
                 return '#ccffcc'; // light green
             case 'unsettled':
                 return '#ffcccc'; // light red

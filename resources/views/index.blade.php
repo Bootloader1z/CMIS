@@ -68,20 +68,79 @@
 <!-- End Modal -->
 
 
-
-    
-
 <div class="modal fade" id="salesModal" tabindex="-1" aria-labelledby="salesModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- Adjust modal size as needed -->
+    <div class="modal-dialog modal-dialog-centered modal-lg">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
-                <h5 class="modal-title" id="salesModalLabel">Traffic Violations Today</h5>
+                <h5 class="modal-title" id="salesModalLabel">Traffic Violations</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body modal-dialog-scrollable"> <!-- Added modal-dialog-scrollable class -->
-                @if($salesToday->isEmpty())
-                    <p>No traffic violations recorded today.</p>
-                @else
+            <div class="modal-body">
+                <form id="dateForm" class="mb-3">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <label for="violationDate" class="form-label">Select Date</label>
+                            <input type="date" class="form-control" id="violationDate" name="date">
+                        </div>
+                        <div class="col-md-4 d-flex align-items-end">
+                            <button type="submit" class="btn btn-primary w-100">Get Violations</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="violationsContent">
+                    @if($salesToday->isEmpty())
+                        <p>No traffic violations recorded today.</p>
+                    @else
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Case Number</th>
+                                        <th>Driver</th>
+                                        <th>Plate Number</th>
+                                        <th>Violation</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($salesToday as $violation)
+                                        <tr>
+                                            <td>{{ $violation->case_no }}</td>
+                                            <td>{{ $violation->driver }}</td>
+                                            <td>{{ $violation->plate_no }}</td>
+                                            <td>{{ $violation->violation }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('dateForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+    
+        var date = document.getElementById('violationDate').value;
+    
+        fetch('{{ route("get.today") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({ date: date })
+        })
+        .then(response => response.json())
+        .then(data => {
+            var violationsContent = document.getElementById('violationsContent');
+            if (data.violations.length === 0) {
+                violationsContent.innerHTML = '<p>No traffic violations recorded on this date.</p>';
+            } else {
+                var tableContent = `
                     <table class="table">
                         <thead>
                             <tr>
@@ -92,22 +151,29 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($salesToday as $violation)
-                                <tr>
-                                    <td>{{ $violation->case_no }}</td>
-                                    <td>{{ $violation->driver }}</td>
-                                    <td>{{ $violation->plate_no }}</td>
-                                    <td>{{ $violation->violation }}</td>
-                                </tr>
-                            @endforeach
+                `;
+                data.violations.forEach(violation => {
+                    tableContent += `
+                        <tr>
+                            <td>${violation.case_no}</td>
+                            <td>${violation.driver}</td>
+                            <td>${violation.plate_no}</td>
+                            <td>${violation.violation}</td>
+                        </tr>
+                    `;
+                });
+                tableContent += `
                         </tbody>
                     </table>
-                @endif
-            </div>
-        </div>
-    </div>
-</div>
-
+                `;
+                violationsContent.innerHTML = tableContent;
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    });
+    </script>
+    
+    
 
 
 
@@ -208,14 +274,13 @@
                         </tr>
                     </thead>
                     <tbody>
-    @foreach($yearlyData as $year => $record)
-        <tr>
-            <td>{{ $year }}</td>
-            <td>{{ $record->record_count }}</td>
-        </tr>
-    @endforeach
-</tbody>
-
+                        @foreach($yearlyData as $year => $record)
+                            <tr>
+                                <td><a href="{{ route('showYearData', $year) }}">{{ $year }}</a></td>
+                                <td>{{ $record->record_count }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
                 </table>
             </div>
             <div class="modal-footer">
@@ -225,6 +290,7 @@
     </div>
 </div>
 <!-- End Customers Modal -->
+
 
 
 
@@ -402,9 +468,14 @@
                     <div class="card top-selling overflow-auto">
                         <div class="card-body pb-0">
                             <h5 class="card-title">Top Apprehending Officers <span>| Cases</span></h5>
-                            <!-- Search input -->
+                            <!-- Filter buttons -->
                             <div class="mb-3">
-                                <input type="text" id="searchInput" class="form-control" placeholder="Search by details...">
+                                <div class="btn-group" role="group" aria-label="Filter by">
+                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="all">All</button>
+                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="today">Today</button>
+                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="this_month">This Month</button>
+                                </div>
+                                <input type="text" id="searchInput" class="form-control mt-2" placeholder="Search by details...">
                             </div>
                             <div class="table-responsive">
                                 <table id="officers-table" class="table table-striped table-hover custom-table">
@@ -414,20 +485,17 @@
                                             <th scope="col">Apprehending Officer</th>
                                             <th scope="col">Department</th>
                                             <th scope="col">Total Cases</th>
-                                            
                                         </tr>
                                     </thead>
                                     <tbody>
                                         @foreach($officers as $index => $officer)
                                         <tr class="{{ $index < 3 ? 'top-officer' : '' }}">
-                                            <!-- Highlight top 3 officers -->
                                             <th scope="row">{{ $index + $officers->firstItem() }}</th>
                                             <td>
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#officerModal{{ $index }}">{{ $officer->apprehending_officer ?: 'Unknown' }}</a>
                                             </td>
                                             <td>{{ $officer->department }}</td>
                                             <td>{{ $officer->total_cases ?: 'Unknown' }}</td>
-                                            
                                         </tr>
                                         @endforeach
                                     </tbody>
@@ -439,11 +507,8 @@
                                 <p id="pagination-info">Showing {{ $officers->firstItem() }} to {{ $officers->lastItem() }} of {{ $officers->total() }} officers.</p>
                                 <p>For more detailed information, click on the officer's name.</p>
                             </div>
-        
-                            <!-- Pagination moved to the right side -->
                             <div class="pagination mt-2">
-                                <button class="btn btn-outline-primary mr-2" id="btn-prev" {{ $officers->previousPageUrl() ? '' : 'disabled' }}>Previous</button>
-                                <button class="btn btn-outline-primary" id="btn-next" {{ $officers->nextPageUrl() ? '' : 'disabled' }}>Next</button>
+                                {{ $officers->links() }} <!-- Laravel pagination links -->
                             </div>
                         </div>
                     </div>
@@ -505,8 +570,7 @@
         @else
         <p>No officers found.</p>
         @endif
-        <!-- End Modals for Officer Details -->
-        
+       
         <script>
             $(document).ready(function() {
                 let currentPage = {{ $officers->currentPage() }};

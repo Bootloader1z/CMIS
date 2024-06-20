@@ -13,7 +13,7 @@ class ArchivesObserver
     public function created(Archives $Archives)
     {
         // Log creation including details and added fields
-        $this->logHistory($Archives, 'created', null, null, null, $Archives->toArray(), 'Created a New Archives Record !');
+        $this->logHistory($Archives, 'CREATED', null, null, null, $Archives->toArray(), 'Created a New Archives Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class ArchivesObserver
             $oldValue = $Archives->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($Archives, 'updated', $field, $oldValue, $newValue, null, 'Updated a Archives Field.');
+            $this->logHistory($Archives, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Archives Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class ArchivesObserver
     public function deleted(Archives $Archives)
     {
         // Log deletion including details field
-        $this->logHistory($Archives, 'deleted', null, null, null, $Archives->toArray(), 'Deleted a Archives record');
+        $this->logHistory($Archives, 'DELETED', null, null, null, $Archives->toArray(), 'Deleted a Archives record');
     }
 
     /**

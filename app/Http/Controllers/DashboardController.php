@@ -29,6 +29,34 @@ use DateTime;
 
 class DashboardController extends Controller
 {
+
+    public function getViolations(Request $request)
+    {
+        // Log the incoming request data
+        Log::info('getViolations method called', ['date' => $request->input('date')]);
+
+        $date = $request->input('date');
+        
+        // Log the query being executed
+        Log::info('Fetching violations for date', ['date' => $date]);
+
+        $violations = TasFile::whereDate('created_at', $date)->latest()->get();
+
+        // Log the result
+        Log::info('Violations fetched', ['violations' => $violations]);
+
+        return response()->json([
+            'violations' => $violations
+        ]);
+    }
+
+    public function showYearData($year)
+    {
+        $data = TasFile::whereYear('date_received', $year)->get();
+
+        return view('yearlyData.show', compact('data', 'year'));
+    }
+
     public function indexa(Request $request){
 
         if ($request->ajax()) {
@@ -40,18 +68,14 @@ class DashboardController extends Controller
                 ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
                 ->orderByDesc('total_cases')
                 ->paginate(10); // Paginate with 10 officers per page
-
-            // Return a partial view for the AJAX request
+ 
             return view('officers.table', compact('officers'))->render();
         }
             $revenueThisMonth = TasFile::whereMonth('date_received', date('m'))->count();
 
             $previousMonthRevenue = TasFile::whereMonth('date_received', Carbon::now()->subMonth())->count();
 
-            // // Calculate the percentage change
-            // $percentageChange = $previousMonthRevenue > 0 ? (($revenueThisMonth - $previousMonthRevenue) / $previousMonthRevenue) * 100 : 0;
-
-            // $percentageChange = $previousYearCustomers > 0 ? (($customersThisYear - $previousYearCustomers) / $previousYearCustomers) * 100 : 0;
+            
             $recentActivity = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
             $customersThisYear = TasFile::whereYear('date_received', now())->count();
             $recentSalesToday = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
@@ -71,8 +95,7 @@ class DashboardController extends Controller
             ];
         });
         $departmentsData = ApprehendingOfficer::all();
-        $unreadMessageCount = G5ChatMessage::where('is_read', false)->count();
-        $messages = G5ChatMessage::latest()->with('user')->limit(10)->get();
+       
         $user = Auth::user();
         $name = $user->name;
         $department = $user->department;
@@ -113,7 +136,7 @@ class DashboardController extends Controller
         ->paginate(10); // Paginate with 10 officers per page
 
 
-        return view('index', compact('officers','yearlyData','countByMonth','unreadMessageCount','messages', 'name', 'department','departmentsData','tasFileData','admittedData','chartData','recentActivity', 'recentSalesToday', 'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek'));
+        return view('index', compact('officers','yearlyData','countByMonth',  'name', 'department','departmentsData','tasFileData','admittedData','chartData','recentActivity', 'recentSalesToday', 'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek'));
        // return view('index', compact('recentActivity', 'recentSalesToday', 'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek','previousYearCustomers', 'previousMonthRevenue', 'percentageChange'));
     }
 

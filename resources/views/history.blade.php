@@ -82,9 +82,9 @@
                                                 data-user="{{ $activity->user ? $activity->user->fullname : 'Unknown User' }}"
                                                 data-action="{{ $activity->action }}"
                                                 data-file-type="{{ $activity->model === 'App\Models\admitted' ? 'Case Admitted' : $activity->model }}"
-                                                data-field="{{ $activity->action !== 'created' ? $activity->field : '-' }}"
-                                                data-old-value="{{ $activity->action !== 'created' ? $activity->old_value : '-' }}"
-                                                data-new-value="{{ $activity->action !== 'created' ? $activity->new_value : '-' }}"
+                                                data-field="{{ $activity->action !== 'CREATED' ? $activity->field : '-' }}"
+                                                data-old-value="{{ $activity->action !== 'CREATED' ? $activity->old_value : '-' }}"
+                                                data-new-value="{{ $activity->action !== 'CREATED' ? $activity->new_value : '-' }}"
                                                 data-details="{{ $activity->details ? json_encode(json_decode($activity->details, true)) : '{}' }}"
                                                 data-description="{{ $activity->description ?? '-' }}">
                                                 <td>{{ $activity->created_at->format('Y-m-d H:i:s') }}</td>
@@ -105,10 +105,10 @@
                                                 </td>
                                                 
                                                 
-                                                <td>{{ $activity->field === 'symbols' ? 'Record Status' : ($activity->action !== 'created' ? str_replace('_', ' ', $activity->field) : '-') }}</td>
+                                                <td>{{ $activity->field === 'symbols' ? 'Record Status' : ($activity->action !== 'CREATED' ? str_replace('_', ' ', $activity->field) : '-') }}</td>
 
                                                 <td>
-                                                    @if ($activity->action !== 'created')
+                                                    @if ($activity->action !== 'CREATED')
                                                         @if (is_array($activity->old_value))
                                                             <ol>
                                                                 @foreach ($activity->old_value as $value)
@@ -124,7 +124,7 @@
                                                 </ol>
                                                 </td>
                                                 <td>
-                                                    @if ($activity->action !== 'created')
+                                                    @if ($activity->action !== 'CREATED')
                                                         @if (is_array($activity->new_value))
                                                             <ol>
                                                                 @foreach ($activity->new_value as $value)

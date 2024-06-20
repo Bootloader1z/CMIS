@@ -14,7 +14,7 @@ class AdmittedObserver
     public function created(admitted $admitted)
     {
         // Log creation including details and added fields
-        $this->logHistory($admitted, 'created', null, null, null, $admitted->toArray(), 'Created a New Case Admitted Record !');
+        $this->logHistory($admitted, 'CREATED', null, null, null, $admitted->toArray(), 'Created a New Case Admitted Record !');
     }
 
     /**
@@ -33,7 +33,7 @@ class AdmittedObserver
             $oldValue = $admitted->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($admitted, 'updated', $field, $oldValue, $newValue, null, 'Updated a Case Admitted Field.');
+            $this->logHistory($admitted, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Case Admitted Field.');
         }
     }
     
@@ -43,7 +43,7 @@ class AdmittedObserver
     public function deleted(admitted $admitted)
     {
         // Log deletion including details field
-        $this->logHistory($admitted, 'deleted', null, null, null, $admitted->toArray(), 'Deleted a Case Admitted record');
+        $this->logHistory($admitted, 'DELETED', null, null, null, $admitted->toArray(), 'Deleted a Case Admitted record');
     }
 
     /**

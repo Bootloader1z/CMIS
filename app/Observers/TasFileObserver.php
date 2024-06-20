@@ -13,7 +13,7 @@ class TasFileObserver
     public function created(TasFile $TasFile)
     {
         // Log creation including details and added fields
-        $this->logHistory($TasFile, 'created', null, null, null, $TasFile->toArray(), 'Created a New Case Contested Record !');
+        $this->logHistory($TasFile, 'CREATED', null, null, null, $TasFile->toArray(), 'Created a New Case Contested Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class TasFileObserver
             $oldValue = $TasFile->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($TasFile, 'updated', $field, $oldValue, $newValue, null, 'Updated a Case Contested Field.');
+            $this->logHistory($TasFile, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Case Contested Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class TasFileObserver
     public function deleted(TasFile $TasFile)
     {
         // Log deletion including details field
-        $this->logHistory($TasFile, 'deleted', null, null, null, $TasFile->toArray(), 'Deleted a Case Contested record');
+        $this->logHistory($TasFile, 'DELETED', null, null, null, $TasFile->toArray(), 'Deleted a Case Contested record');
     }
 
     /**
