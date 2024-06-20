@@ -62,7 +62,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/yearly-data/{year}', [DashboardController::class, 'showYearData'])->name('showYearData');
 
-
+    Route::get('/officers-chart', [UserController::class, 'officersChart'])->name('officers.chart');
 
 
     // =============== USER PROFILE

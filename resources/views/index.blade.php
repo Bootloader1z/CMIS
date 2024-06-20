@@ -416,7 +416,81 @@
 
         <!-- Right side columns -->
         <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">Apprehending Officers by Department</h5>
+                </div>
+                <div class="card-body">
+                    <div id="chart"></div>
+                </div>
+                <div class="card-footer">
+                    <button id="toggleInactiveBtn" class="btn btn-sm btn-secondary">Toggle Inactive Officers</button>
+                </div>
+            </div>
+            <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.29.1/dist/apexcharts.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var showInactive = false; // Flag to toggle showing inactive officers
 
+        function fetchChart() {
+            axios.get('{{ route('officers.chart') }}', {
+                    params: {
+                        showInactive: showInactive
+                    }
+                })
+                .then(function(response) {
+                    var officers = response.data;
+
+                    // Prepare chart data
+                    var series = officers.map(function(officer) {
+                        return officer.total_cases;
+                    });
+
+                    var labels = officers.map(function(officer) {
+                        return officer.department;
+                    });
+
+                    var options = {
+                        series: series,
+                        labels: labels,
+                        chart: {
+                            type: 'donut',
+                        },
+                        colors: ['#6ab04c', '#2980b9', '#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#95a5a6', '#f1c40f', '#16a085'],
+                        legend: {
+                            position: 'bottom',
+                        },
+                        responsive: [{
+                            breakpoint: 480,
+                            options: {
+                                chart: {
+                                    width: 200
+                                },
+                                legend: {
+                                    position: 'bottom'
+                                }
+                            }
+                        }]
+                    };
+
+                    var chart = new ApexCharts(document.querySelector("#chart"), options);
+                    chart.render();
+                })
+                .catch(function(error) {
+                    console.error('Error fetching chart data:', error);
+                });
+        }
+
+        // Initial chart load
+        fetchChart();
+
+        // Toggle button click event
+        $('#toggleInactiveBtn').click(function() {
+            showInactive = !showInactive; // Toggle flag
+            fetchChart(); // Fetch chart data based on updated flag
+        });
+    });
+</script>
   <!-- Recent Activity -->
 <div class="card">
     <div class="filter">

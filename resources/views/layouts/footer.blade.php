@@ -48,3 +48,8 @@
 
 <!-- jQuery (needed for Bootstrap's JavaScript plugins) -->
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- ApexCharts CSS -->
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.29.1/dist/apexcharts.min.css" rel="stylesheet">
+
+<!-- Axios (for AJAX requests) -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>

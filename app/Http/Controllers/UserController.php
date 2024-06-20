@@ -79,4 +79,35 @@ class UserController extends Controller
     
         return response()->json($notifications);
     }
+
+    public function officersChart(Request $request)
+    {
+           // Determine if we should include inactive officers based on the request parameter
+           $showInactive = $request->query('showInactive', false);
+
+           // Default query to fetch all records
+           $query = ApprehendingOfficer::select('department')
+                                       ->selectRaw('COUNT(*) as total_cases')
+                                       ->groupBy('department')
+                                       ->orderBy('total_cases', 'desc');
+   
+           // Apply filter for inactive officers if requested
+           if (!$showInactive) {
+               $query->where('isactive', true);
+           }
+   
+           // Fetch the data
+           $officers = $query->get();
+   
+           // Prepare data in the required format for the chart
+           $data = $officers->map(function ($officer) {
+               return [
+                   'department' => $officer->department,
+                   'total_cases' => $officer->total_cases,
+               ];
+           });
+   
+           // Return the data as JSON response
+           return response()->json($data);
+       }
 }

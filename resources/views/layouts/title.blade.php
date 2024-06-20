@@ -60,6 +60,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
+<!-- ApexCharts CSS -->
+<link href="https://cdn.jsdelivr.net/npm/apexcharts@3.29.1/dist/apexcharts.min.css" rel="stylesheet">
+
+<!-- Axios (for AJAX requests) -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
 
 <!-- Bootstrap Bundle with Popper.js -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
