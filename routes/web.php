@@ -219,6 +219,8 @@ Route::get('/check-new-messages/{userId}',  [DashboardController::class, 'checkN
     Route::get('/history', [UserController::class, 'admitTrail'])->name('audit.trail');
 
     Route::get('/admitted/{id}/filter/{filter?}', [UserController::class, 'show']);
+    Route::get('/notifications', [UserController::class, 'getNotifications'])->name('notifications');
+ 
 });
 
 

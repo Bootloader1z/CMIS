@@ -122,7 +122,6 @@
                                 <option value="in-progress">In Progress</option>
                                 <option value="closed">Closed</option>
                                 <option value="settled">Settled</option>
-                                <option value="unsettled">Unsettled</option>
                             </select>
                             <div class="invalid-tooltip">
                                 Please select a status.
@@ -259,6 +258,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
     
   </main><!-- End #main -->
+<!-- Modal for Notification Details -->
+<div class="modal fade" id="notificationModal" tabindex="-1" aria-labelledby="notificationModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 80%;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="notificationModalLabel">Notification Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div id="notificationDetails"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- End Modal -->
 
  @include('layouts.footer')
 </body>

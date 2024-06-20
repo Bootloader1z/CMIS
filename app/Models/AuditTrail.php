@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class AuditTrail extends Model
 {
-    protected $fillable = ['model', 'added', 'details','field', 'old_value', 'new_value', 'user_id'];
+    protected $fillable = ['model', 'description', 'details','field', 'old_value', 'new_value', 'user_id'];
 
     public function user()
     {
