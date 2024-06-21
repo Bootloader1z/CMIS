@@ -122,7 +122,7 @@
                                 <option value="in-progress">In Progress</option>
                                 <option value="closed">Closed</option>
                                 <option value="settled">Settled</option>
-                                <option value="unsettled">Unsettled</option>
+                  
                             </select>
                             <div class="invalid-tooltip">
                                 Please select a status.

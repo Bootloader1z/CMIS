@@ -13,7 +13,7 @@ class ApprehendingOfficerObserver
     public function created(ApprehendingOfficer $ApprehendingOfficer)
     {
         // Log creation including details and added fields
-        $this->logHistory($ApprehendingOfficer, 'CREATED', null, null, null, $ApprehendingOfficer->toArray(), 'Created a New Case ApprehendingOfficer Record !');
+        $this->logHistory($ApprehendingOfficer, 'CREATED', 'No DATA', 'No DATA', 'No DATA', $ApprehendingOfficer->toArray(), 'Created a New Case ApprehendingOfficer Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class ApprehendingOfficerObserver
             $oldValue = $ApprehendingOfficer->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($ApprehendingOfficer, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Case ApprehendingOfficer Field.');
+            $this->logHistory($ApprehendingOfficer, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a Case ApprehendingOfficer Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class ApprehendingOfficerObserver
     public function deleted(ApprehendingOfficer $ApprehendingOfficer)
     {
         // Log deletion including details field
-        $this->logHistory($ApprehendingOfficer, 'DELETED', null, null, null, $ApprehendingOfficer->toArray(), 'Deleted a Case ApprehendingOfficer record');
+        $this->logHistory($ApprehendingOfficer, 'DELETED', 'No DATA', 'No DATA', 'No DATA', $ApprehendingOfficer->toArray(), 'Deleted a Case ApprehendingOfficer record');
     }
 
     /**
@@ -51,7 +51,7 @@ class ApprehendingOfficerObserver
     protected function logHistory(ApprehendingOfficer $ApprehendingOfficer, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
-        $auditTrail->model = 'Apprehending Officer';
+        $auditTrail->model = 'Apprehending Officer Managed';
         $auditTrail->action = $action;
         $auditTrail->field = $field;
         $auditTrail->old_value = $oldValue;

@@ -15,10 +15,10 @@
   <main id="main" class="main">
 
     <div class="pagetitle">
-      <h1>Dashboard</h1>
+      <h1>Case Management Information System</h1>
       <nav>
         <ol class="breadcrumb">
-          <li class="breadcrumb-item"><a href="index.html">Home</a></li>
+          <li class="breadcrumb-item"><a href="{{route('dashboard')}}">Home</a></li>
           <li class="breadcrumb-item active">Dashboard</li>
         </ol>
       </nav>
@@ -37,7 +37,7 @@
             <h5 class="card-title">{{ date('l') }} <span> | Violations Today</span></h5> <!-- Display today's date -->
             <div class="d-flex align-items-center">
                 <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-cone-striped"></i>
+                    <i class="bi bi-calendar3"></i>
                 </div>
                 <div class="ps-3">
                     @if($salesToday->isEmpty())
@@ -184,7 +184,7 @@
             <h5 class="card-title">{{ date('F') }} <span> | This Month</span></h5> <!-- Display current month name -->
             <div class="d-flex align-items-center">
                 <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-exclamation-diamond-fill"></i>
+                    <i class="bi bi-calendar2-week-fill"></i>
                 </div>
                 <div class="ps-3">
                     <h6>{{ $revenueThisMonth }}</h6> <!-- Display revenue for this month -->
@@ -246,7 +246,7 @@
             <h5 class="card-title">{{ date('Y') }}<span> | This Year</span></h5> <!-- Display current year -->
             <div class="d-flex align-items-center">
                 <div class="card-icon rounded-circle d-flex align-items-center justify-content-center">
-                    <i class="bi bi-exclamation-triangle"></i>
+                    <i class="bi bi-calendar-range-fill"></i>
                 </div>
                 <div class="ps-3">
                     <h6>{{ $customersThisYear }}</h6> <!-- Display customers for this year -->
@@ -317,8 +317,6 @@
     </div>
   </div>
 </div>
-
-
 
 <script>
   document.addEventListener("DOMContentLoaded", () => {
@@ -412,129 +410,231 @@
 
 
           </div>
+          <div class="row">
+            <div class="col-12">
+                <div class="card recent-sales overflow-auto">
+                    <div class="card-body">
+                        <h5 class="card-title">Recent Encode <span>| Today</span></h5>
+        
+                        <div class="datatable-wrapper datatable-loading no-footer sortable searchable fixed-columns">
+                            <div class="datatable-container">
+                                <table id="recentSalesTable" class="table table-striped table-bordered">
+                                    <thead class="thead-dark">
+                                        <tr>
+                                            <th scope="col">Case/Admitted No</th>
+                                            <th scope="col">Driver</th>
+                                            <th scope="col">Violation</th>
+                                            <th scope="col">Fine</th>
+                                            <th scope="col">Case</th>
+                                            <th scope="col">Status</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- Loop through TasFile data -->
+                                        @foreach ($recentSalesTodayTasFile as $sale)
+                                        <tr>
+                                            <td>{{ $sale->case_no }}</td>
+                                            <td>{{ $sale->driver }}</td>
+                                            <td>{{ $sale->violation }}</td>
+                                            <td>{{ $sale->fine_fee }}</td>
+                                            <td style="font-weight: bold; color: #c22323;">Case Contested</td>
+                                            <td style="background-color: {{ getStatusColor($sale->status) }};">
+                                                <strong>{{ $sale->status }}</strong>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+        
+                                        <!-- Loop through CaseAdmitted data -->
+                                        @foreach ($recentSalesTodayCaseAdmitted as $sale)
+                                        <tr>
+                                            <td>{{ $sale->admittedno }}</td>
+                                            <td>{{ $sale->driver }}</td>
+                                            <td>{{ $sale->violation }}</td>
+                                            <td>{{ $sale->fine_fee }}</td>
+                                            <td style="font-weight: bold; color: #007bff;">Case Admitted</td>
+                                            <td style="background-color: {{ getStatusColor($sale->status) }}; font-weight: bold;">
+                                                {{ $sale->status }}
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="datatable-bottom">
+                                <!-- Pagination for TasFile (adjust as per your actual pagination variable) -->
+                                {{ $recentSalesTodayTasFile->links() }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        
+        <!-- JavaScript for DataTables initialization and search functionality -->
+        <script>
+            $(document).ready(function() {
+                // Initialize DataTable
+                var table = $('#recentSalesTable').DataTable({
+                    "paging": false, // Disable pagination (since you're using Laravel pagination separately)
+                    "searching": true, // Enable searching
+                    "info": false, // Disable info text showing "Showing 1 to X of X entries"
+                });
+        
+                // Add search functionality
+                $('#searchInput').on('keyup', function() {
+                    table.search($(this).val()).draw();
+                });
+            });
+        </script>
+        
         </div><!-- End Left side columns -->
 
         <!-- Right side columns -->
         <div class="col-lg-4">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title">Apprehending Officers by Department</h5>
+         
+        
+                <div class="card">
+                    <div class="card-header">
+                       <h5 class="card-title"> Apprehending Officers Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="department">Select Department:</label>
+                            <select class="form-control" id="department">
+                                <option value="">All Departments</option>
+                                @foreach ($departments as $department)
+                                    <option value="{{ $department->department }}">{{ $department->department }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div id="chart"></div>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <div id="chart"></div>
-                </div>
-                <div class="card-footer">
-                    <button id="toggleInactiveBtn" class="btn btn-sm btn-secondary">Toggle Inactive Officers</button>
-                </div>
-            </div>
-            <script src="https://cdn.jsdelivr.net/npm/apexcharts@3.29.1/dist/apexcharts.min.js"></script>
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var showInactive = false; // Flag to toggle showing inactive officers
-
-        function fetchChart() {
-            axios.get('{{ route('officers.chart') }}', {
-                    params: {
-                        showInactive: showInactive
-                    }
-                })
-                .then(function(response) {
-                    var officers = response.data;
-
-                    // Prepare chart data
-                    var series = officers.map(function(officer) {
-                        return officer.total_cases;
-                    });
-
-                    var labels = officers.map(function(officer) {
-                        return officer.department;
-                    });
-
-                    var options = {
-                        series: series,
-                        labels: labels,
-                        chart: {
-                            type: 'donut',
-                        },
-                        colors: ['#6ab04c', '#2980b9', '#f39c12', '#e74c3c', '#9b59b6', '#3498db', '#1abc9c', '#95a5a6', '#f1c40f', '#16a085'],
-                        legend: {
-                            position: 'bottom',
-                        },
-                        responsive: [{
-                            breakpoint: 480,
-                            options: {
-                                chart: {
-                                    width: 200
+         
+        
+                <script>
+                    $(document).ready(function() {
+                        var chart;
+            
+                        function fetchChartData(department = '') {
+                            $.ajax({
+                                url: '{{ route("officers.status") }}',
+                                method: 'GET',
+                                data: { department: department },
+                                success: function(response) {
+                                    console.log('Fetched Data:', response); // Log the response data to ensure it's correct
+            
+                                    // Check if both active and inactive counts are being fetched correctly
+                                    var inactiveCount = response.inactive !== undefined ? response.inactive : 0;
+                                    var activeCount = response.active !== undefined ? response.active : 0;
+            
+                                    var options = {
+                                        chart: {
+                                            type: 'pie'
+                                        },
+                                        series: [inactiveCount, activeCount],
+                                        labels: ['Inactive', 'Active']
+                                    };
+            
+                                    if (chart) {
+                                        chart.destroy();
+                                    }
+            
+                                    chart = new ApexCharts(document.querySelector("#chart"), options);
+                                    chart.render();
                                 },
-                                legend: {
-                                    position: 'bottom'
+                                error: function(xhr, status, error) {
+                                    console.error('AJAX Error:', error);
                                 }
-                            }
-                        }]
-                    };
+                            });
+                        }
+            
+                        // Fetch initial chart data
+                        fetchChartData();
+            
+                        // Fetch chart data on department change
+                        $('#department').change(function() {
+                            var department = $(this).val();
+                            fetchChartData(department);
+                        });
+                    });
+                </script>
+    <!-- Recent Activity -->
+    <div class="card">
+        
+        <div class="card-body">
+            <h5 class="card-title">User Activity <span>| Today</span></h5>
 
-                    var chart = new ApexCharts(document.querySelector("#chart"), options);
-                    chart.render();
-                })
-                .catch(function(error) {
-                    console.error('Error fetching chart data:', error);
-                });
-        }
-
-        // Initial chart load
-        fetchChart();
-
-        // Toggle button click event
-        $('#toggleInactiveBtn').click(function() {
-            showInactive = !showInactive; // Toggle flag
-            fetchChart(); // Fetch chart data based on updated flag
-        });
-    });
-</script>
-  <!-- Recent Activity -->
-<div class="card">
-    <div class="filter">
-        <a class="icon" href="#" data-bs-toggle="dropdown"><i class="bi bi-three-dots"></i></a>
-        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
-            <li class="dropdown-header text-start">
-                <h6>Filter</h6>
-            </li>
-            <li><a class="dropdown-item" href="#">Today</a></li>
-            <li><a class="dropdown-item" href="#">This Month</a></li>
-            <li><a class="dropdown-item" href="#">This Year</a></li>
-        </ul>
-    </div>
-
-    <div class="card-body">
-        <h5 class="card-title">Recent Activity <span>| Today</span></h5>
-
-        <div class="activity">
-            @foreach($recentActivity as $activity)
-            <div class="activity-item d-flex">
-                <div class="activite-label">{{ $activity->created_at->diffForHumans() }}</div>
-                <i class='bi bi-circle-fill activity-badge text-success align-self-start'></i>
-                <div class="activity-content">
-                    <p><strong>Case No:</strong> {{ $activity->case_no }}</p>
-                    <p><strong>Driver:</strong> {{ $activity->driver }}</p>
-                    <p><strong>Apprehending Officer:</strong> {{ $activity->apprehending_officer }}</p>
-                    <p><strong>Violation:</strong> {{ $activity->violation }}</p>
-                    <p><strong>Transaction No:</strong> {{ $activity->transaction_no }}</p>
-                    <!-- Add more details as needed -->
-                </div>
-            </div><!-- End activity item-->
-            <hr> <!-- Separator -->
-            @endforeach
+            <div id="activity-container" class="activity">
+                <!-- Activity items will be appended here -->
+            </div>
         </div>
+    </div><!-- End Recent Activity -->
 
+
+
+    <script>
+        $(document).ready(function() {
+            function fetchRecentActivity() {
+                $.ajax({
+                    url: '{{ route("api.recentActivity") }}',
+                    method: 'GET',
+                    success: function(response) {
+                        var activityContainer = $('#activity-container');
+    
+                        // Clear previous activities only if there are new activities
+                        if (response.length > 0) {
+                            activityContainer.empty(); // Clear previous activities
+                        }
+    
+                        var index = 0;
+                        setInterval(function() {
+                            var activity = response[index];
+                            var fieldContent = '';
+
+// Determine the content of the Field based on conditions
+if (activity.field == 'symbols') {
+    fieldContent = 'Record Status';
+} else if (activity.file_attach) {
+    fieldContent = 'File Attachment';
+} else if (activity.typeofvehicle) {
+    fieldContent = 'Type of Vehicle';
+} else {
+    fieldContent = activity.field;
+}
+
+                            var activityItem = `
+                           <div class="activity-item d-flex">
+    <div class="activity-label">${new Date(activity.created_at).toLocaleString()}</div>
+    <i class="bi bi-clock-fill activity-badge text-success align-self-start"></i>
+    <div class="activity-content">
+        <h5> ${activity.model}</h5>
+        <p><strong>Description:</strong> ${activity.description}</p>
+          <p><strong>Field:</strong> ${fieldContent}</p>
+        <p><strong>By:</strong> ${activity.user.fullname} (${activity.user.username})</p>
     </div>
-</div><!-- End Recent Activity -->
+</div><!-- End activity item -->
 
-
-
-
-
-      
-
+                                <hr> <!-- Separator -->
+                            `;
+                            activityContainer.html(activityItem);
+                            activityContainer.children().fadeIn(500); // Fade in the activity
+    
+                            index = (index + 1) % response.length; // Move to the next activity cyclically
+                        }, 3000); // Repeat every 3 seconds (adjust as needed)
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Error fetching recent activity:', error);
+                    }
+                });
+            }
+    
+            // Fetch initial activity data
+            fetchRecentActivity();
+        });
+    </script>
+    
         </div><!-- End Right side columns -->
         <div class="container">
             <div class="row">
@@ -545,11 +645,9 @@
                             <!-- Filter buttons -->
                             <div class="mb-3">
                                 <div class="btn-group" role="group" aria-label="Filter by">
-                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="all">All</button>
-                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="today">Today</button>
-                                    <button type="button" class="btn btn-outline-primary filter-btn" data-filter="this_month">This Month</button>
+                                    <input type="text" id="searchInput" class="form-control mt-2" placeholder="Search by details...">
                                 </div>
-                                <input type="text" id="searchInput" class="form-control mt-2" placeholder="Search by details...">
+                               
                             </div>
                             <div class="table-responsive">
                                 <table id="officers-table" class="table table-striped table-hover custom-table">

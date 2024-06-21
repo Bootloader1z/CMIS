@@ -87,7 +87,7 @@
                                                 data-new-value="{{ $activity->action !== 'CREATED' ? $activity->new_value : '-' }}"
                                                 data-details="{{ $activity->details ? json_encode(json_decode($activity->details, true)) : '{}' }}"
                                                 data-description="{{ $activity->description ?? '-' }}">
-                                                <td>{{ $activity->created_at->format('Y-m-d H:i:s') }}</td>
+                                                <td><strong><em>{{ $activity->created_at->format('Y-m-d H:i:s') }}</em></strong></td>
                                                 <td>{{ $activity->user ? $activity->user->fullname : 'Unknown User' }}</td>
                                                 <td>{{ $activity->action }}</td>
                                                 <td>
@@ -169,10 +169,7 @@
                                     </table>
                                 </div>
 
-                                <!-- Pagination links -->
-                                <div class="d-flex justify-content-center mt-4">
-                                    {{ $activities->links() }}
-                                </div>
+                              
                             </div><!-- End card body -->
                         </div><!-- End card -->
                     </div><!-- End col-lg-12 -->

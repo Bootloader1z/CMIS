@@ -2094,3 +2094,46 @@ ul.list-unstyled li {
   margin: 10px 0;
   border-top: 1px solid #dee2e6;
 }
+.activity-item {
+  padding: 15px;
+  border: 1px solid #ddd;
+  margin-bottom: 15px;
+  background-color: #f9f9f9;
+}
+
+.activity-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.activity-badge {
+  font-size: 1.2rem;
+  margin-right: 10px;
+}
+
+.activity-info {
+  flex: 1;
+}
+
+.activity-title {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.activity-user {
+  margin-bottom: 5px;
+}
+
+.activity-time {
+  font-size: 0.85rem;
+  color: #666;
+}
+
+.activity-description p {
+  margin-bottom: 5px;
+}
+
+.activity-separator {
+  margin: 10px 0;
+}

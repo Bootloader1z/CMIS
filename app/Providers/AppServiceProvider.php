@@ -16,6 +16,8 @@ use App\Observers\DepartmentObserver;
 use App\Models\G5ChatMessage;
 use App\Observers\G5ChatMessageObserver;
 use App\Models\Archives;
+use App\Models\User;
+use App\Observers\UserObserver;
 use App\Observers\ArchivesObserver;
 class AppServiceProvider extends ServiceProvider
 {
@@ -39,5 +41,6 @@ class AppServiceProvider extends ServiceProvider
         Department::observe(DepartmentObserver::class);
         G5ChatMessage::observe(G5ChatMessageObserver::class);
         Archives::observe(ArchivesObserver::class);
+        User::observe(UserObserver::class);
     }
 }

@@ -14,7 +14,7 @@ class AdmittedObserver
     public function created(admitted $admitted)
     {
         // Log creation including details and added fields
-        $this->logHistory($admitted, 'CREATED', null, null, null, $admitted->toArray(), 'Created a New Case Admitted Record !');
+        $this->logHistory($admitted, 'CREATED', 'No DATA', 'No DATA', 'No DATA', $admitted->toArray(), 'Created a New Case Admitted Record !');
     }
 
     /**
@@ -37,13 +37,14 @@ class AdmittedObserver
         }
     }
     
+    
     /**
      * Handle the Admitted "deleted" event.
      */
     public function deleted(admitted $admitted)
     {
         // Log deletion including details field
-        $this->logHistory($admitted, 'DELETED', null, null, null, $admitted->toArray(), 'Deleted a Case Admitted record');
+        $this->logHistory($admitted, 'DELETED', 'No DATA', 'No DATA', 'No DATA', $admitted->toArray(), 'Deleted a Case Admitted record');
     }
 
     /**
@@ -52,7 +53,7 @@ class AdmittedObserver
     protected function logHistory(admitted $admitted, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
-        $auditTrail->model = 'Case Admitted';
+        $auditTrail->model = 'Case Admitted Managed';
         $auditTrail->action = $action;
         $auditTrail->field = $field;
         $auditTrail->old_value = $oldValue;

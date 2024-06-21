@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Observers;
+
 use Illuminate\Support\Facades\Auth;
 use App\Models\AuditTrail;
 use App\Models\TasFile;
@@ -8,20 +9,20 @@ use App\Models\TasFile;
 class TasFileObserver
 {
     /**
-     * Handle the Admitted "created" event.
+     * Handle the TasFile "created" event.
      */
-    public function created(TasFile $TasFile)
+    public function created(TasFile $tasFile)
     {
         // Log creation including details and added fields
-        $this->logHistory($TasFile, 'CREATED', null, null, null, $TasFile->toArray(), 'Created a New Case Contested Record !');
+        $this->logHistory($tasFile, 'CREATED', null, null, null, $tasFile->toArray(), 'Created a New Case Contested Record!');
     }
 
     /**
      * Handle the TasFile "updated" event.
      */
-    public function updated(TasFile $TasFile)
+    public function updated(TasFile $tasFile)
     {
-        $changes = $TasFile->getChanges();
+        $changes = $tasFile->getChanges();
     
         foreach ($changes as $field => $newValue) {
             // Skip logging 'history' and 'updated_at' field changes
@@ -29,26 +30,26 @@ class TasFileObserver
                 continue;
             }
     
-            $oldValue = $TasFile->getOriginal($field);
+            $oldValue = $tasFile->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($TasFile, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Case Contested Field.');
+            $this->logHistory($tasFile, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Case Contested Field.');
         }
     }
     
     /**
-     * Handle the Department "deleted" event.
+     * Handle the TasFile "deleted" event.
      */
-    public function deleted(TasFile $TasFile)
+    public function deleted(TasFile $tasFile)
     {
         // Log deletion including details field
-        $this->logHistory($TasFile, 'DELETED', null, null, null, $TasFile->toArray(), 'Deleted a Case Contested record');
+        $this->logHistory($tasFile, 'DELETED', null, null, null, $tasFile->toArray(), 'Deleted a Case Contested record');
     }
 
     /**
      * Log the changes to the Audit Trail.
      */
-    protected function logHistory(TasFile $TasFile, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
+    protected function logHistory(TasFile $tasFile, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
         $auditTrail->model = 'Case Contested';

@@ -245,6 +245,7 @@ $(document).ready(function() {
         </div>
     </div>
 </div>
+ 
 <!-- End Modal -->
   <!-- Include Footer -->
   @include('layouts.footer')

@@ -104,6 +104,30 @@
                         </td>
                     </tr>
                     <tr>
+                        <th>Fine fee</th>
+                        <td>
+                            <input type="text" class="form-control" id="fine_fee{{ $recentViolationsToday->id }}" name="fine_fee" value="{{ $recentViolationsToday->fine_fee }}">
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>Type of Vehicle</th>
+                        <td>
+                            <input type="text" class="form-control" id="typeofvehicle{{ $recentViolationsToday->id }}" name="typeofvehicle" value="{{ $recentViolationsToday->typeofvehicle }}">
+                        </td>
+                    </tr>
+                    <tr>
+    <th class="text-start">Case Status</th>
+    <td class="text-start">
+        <select class="form-select" id="status{{ $recentViolationsToday->id }}" name="status">
+            <option value="in-progress" {{ $recentViolationsToday->status == 'in-progress' ? 'selected' : '' }}>In-Progress</option>
+            <option value="closed" {{ $recentViolationsToday->status == 'closed' ? 'selected' : '' }}>Close Case</option>
+            <option value="settled" {{ $recentViolationsToday->status == 'settled' ? 'selected' : '' }}>Settled</option>
+           
+        </select>
+    </td>
+</tr>
+
+                  <tr>
                         <th>Remarks</th>
                         <td>
                             @foreach ($remarks as $index => $remark)
@@ -148,16 +172,11 @@
     <div class="input-group mt-2">
     <input type="file" class="form-control" name="file_attach_existing[]" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"  multiple>
     </div>
-
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    
                                 {{-- <button type="submit" class="btn btn-success ">Save changes</button> --}}
                                 <button type="button" class="btn btn-primary" onclick="saveChangesAndReloadModal({{ $recentViolationsToday->id }})">Save changes</button>
-
-    
                                 <button type="button" class="btn btn-danger delete-cases" data-violation-id="{{ $recentViolationsToday->id }}">Delete Case</button>
-
                     </div>
                     </form>
             </div>

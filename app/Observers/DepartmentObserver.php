@@ -13,7 +13,7 @@ class DepartmentObserver
     public function created(Department $Department)
     {
         // Log creation including details and added fields
-        $this->logHistory($Department, 'CREATED', null, null, null, $Department->toArray(), 'Created a New Department Record !');
+        $this->logHistory($Department, 'CREATED', 'No DATA', 'No DATA', 'No DATA', $Department->toArray(), 'Created a New Department Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class DepartmentObserver
             $oldValue = $Department->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($Department, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Department Field.');
+            $this->logHistory($Department, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a Department Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class DepartmentObserver
     public function deleted(Department $Department)
     {
         // Log deletion including details field
-        $this->logHistory($Department, 'DELETED', null, null, null, $Department->toArray(), 'Deleted a Department record');
+        $this->logHistory($Department, 'DELETED', 'No DATA', 'No DATA', 'No DATA', $Department->toArray(), 'Deleted a Department record');
     }
 
     /**

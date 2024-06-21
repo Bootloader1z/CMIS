@@ -120,23 +120,7 @@ class admitted extends Model
         throw new \Exception('Error updating symbols attribute: ' . $e->getMessage());
     }
 }
-public function trackInteraction($action, $changes = [])
-{
-    // Retrieve current user's information
-    $user = Auth::user();
-
-    // Create a new interaction record
-    Interaction::create([
-        'admitted_id' => $this->id,
-        'action' => $action,
-        'user_id' => $user->id,
-        'fullname' => $user->fullname,
-        'username' => $user->username,
-        'timestamp' => now()->toDateTimeString(),
-        'changes' => $changes
-    ]);
-}
-
+ 
 public function logHistory($action, $changes)
 {
     $history = $this->history ?? [];
@@ -160,19 +144,20 @@ public function user()
     return $this->belongsTo(User::class);
 }
      
-      // Method to add a new violation
-      public function addViolation($newViolation)
-      {
-          // Retrieve existing violations
-          $violations = $this->violation ?? [];
   
-          // Add the new violation
-          $violations[] = $newViolation;
-  
-          // Update the violation attribute
-          $this->violation = $violations;
-  
-          // Save the model
-          $this->save();
-      }
+public function addViolation($newViolation)
+{
+    // Retrieve existing violations
+    $violations = json_decode($this->violation, true) ?? [];
+    // Check if the new violation already exists
+    if (!in_array($newViolation, $violations)) {
+        // Add the new violation if it doesn't already exist
+        $violations[] = $newViolation;
+        // Update the violation attribute
+        $this->violation = json_encode($violations);
+        // Save the model
+        $this->save();
+    }
+}
+
 }

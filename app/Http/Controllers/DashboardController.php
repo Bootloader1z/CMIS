@@ -57,8 +57,9 @@ class DashboardController extends Controller
         return view('yearlyData.show', compact('data', 'year'));
     }
 
-    public function indexa(Request $request){
-
+    public function indexa(Request $request)
+    {
+        // Assuming this is the AJAX request part
         if ($request->ajax()) {
             // Fetch paginated officers for AJAX request
             $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
@@ -68,21 +69,33 @@ class DashboardController extends Controller
                 ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
                 ->orderByDesc('total_cases')
                 ->paginate(10); // Paginate with 10 officers per page
- 
+    
             return view('officers.table', compact('officers'))->render();
         }
-            $revenueThisMonth = TasFile::whereMonth('date_received', date('m'))->count();
-
-            $previousMonthRevenue = TasFile::whereMonth('date_received', Carbon::now()->subMonth())->count();
-
-            
-            $recentActivity = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
-            $customersThisYear = TasFile::whereYear('date_received', now())->count();
-            $recentSalesToday = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
-            $averageSalesLastWeek = TasFile::whereBetween('created_at', [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->subDays(1)->endOfDay()])->count() / 7;
-            $admittedData = Admitted::all();
-            $tasFileData = TasFile::all();
-            $chartData = $admittedData->map(function ($item) {
+    
+        // For non-AJAX requests (normal page load)
+        $revenueThisMonth = TasFile::whereMonth('date_received', date('m'))->count();
+        $previousMonthRevenue = TasFile::whereMonth('date_received', Carbon::now()->subMonth())->count();
+        
+        // Fetch recent activity (assumed to be last 5 records created today)
+        $recentActivity = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
+        
+        // Count customers received this year
+        $customersThisYear = TasFile::whereYear('date_received', now())->count();
+        
+        
+        // Calculate average sales per day for the last week
+        $averageSalesLastWeek = TasFile::whereBetween('created_at', [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->subDays(1)->endOfDay()])->count() / 7;
+        
+        
+        // Fetch all admitted data
+        $admittedData = Admitted::all();
+        
+        // Fetch all TasFile data (considering whether this is needed)
+        $tasFileData = TasFile::all();
+        
+        // Prepare chart data based on admitted data
+        $chartData = $admittedData->map(function ($item) {
             $violationCount = 0;
             if ($item->violation) {
                 $violations = json_decode($item->violation);
@@ -94,69 +107,14 @@ class DashboardController extends Controller
                 'transaction_date' => $item->transaction_date,
             ];
         });
+        
+        // Fetch all departments data (assuming this is needed)
         $departmentsData = ApprehendingOfficer::all();
-       
-        $user = Auth::user();
-        $name = $user->name;
-        $department = $user->department;
-        $allMonths = collect(range(1, 12))->map(function ($month) {
-            return ['month' => $month, 'record_count' => 0];
-        });
-        $countByMonth = TasFile::select(
-                DB::raw('MONTH(date_received) as month'),
-                DB::raw('COUNT(*) as record_count')
-            )
-            ->groupBy(DB::raw('MONTH(date_received)'))
-            ->get()
-            ->keyBy('month');
-
-        $countByMonth = $allMonths->map(function ($month) use ($countByMonth) {
-            return $countByMonth->has($month['month']) ? $countByMonth[$month['month']] : $month;
-        });
-
-        $countByMonth = $countByMonth->sortBy('month')->values();
-        $yearlyData = TasFile::select(
-        DB::raw('IFNULL(YEAR(date_received), "Unknown") as year'),
-        DB::raw('COUNT(*) as record_count')
-        )
-        ->groupBy(DB::raw('IFNULL(YEAR(date_received), "Unknown")'))
-        ->get()
-        ->keyBy('year');
-        // Get today's date
-        $today = Carbon::now()->format('Y-m-d');
-
-        // Fetch the data created on today's date
-        $salesToday = TasFile::whereDate('created_at', $today)->get();
-        $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
-        ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
-        ->selectRaw('COUNT(tas_files.apprehending_officer) as total_cases')
-        ->selectRaw('GROUP_CONCAT(tas_files.case_no) as case_numbers')
-        ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
-        ->orderByDesc('total_cases')
-        ->paginate(10); // Paginate with 10 officers per page
-
-
-        return view('index', compact('officers','yearlyData','countByMonth',  'name', 'department','departmentsData','tasFileData','admittedData','chartData','recentActivity', 'recentSalesToday', 'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek'));
-       // return view('index', compact('recentActivity', 'recentSalesToday', 'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek','previousYearCustomers', 'previousMonthRevenue', 'percentageChange'));
-    }
-
-    public function tableofficerdash(Request $request)
-    {
-        if ($request->ajax()) {
-            // Fetch paginated officers for AJAX request
-            $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
-                ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
-                ->selectRaw('COUNT(tas_files.apprehending_officer) as total_cases')
-                ->selectRaw('GROUP_CONCAT(tas_files.case_no) as case_numbers')
-                ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
-                ->orderByDesc('total_cases')
-                ->paginate(10); // Paginate with 10 officers per page
-
-            // Return a partial view for the AJAX request
-            return view('table', compact('officers'))->render();
-        }
-
-        // For normal HTTP requests, return the full view
+        
+        // Fetching the data created on today's date (assuming this is for another purpose)
+        $salesToday = TasFile::whereDate('created_at', today())->get();
+        
+        // Fetch officers data with total cases grouped by officer and department
         $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
             ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
             ->selectRaw('COUNT(tas_files.apprehending_officer) as total_cases')
@@ -164,9 +122,55 @@ class DashboardController extends Controller
             ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
             ->orderByDesc('total_cases')
             ->paginate(10); // Paginate with 10 officers per page
+        
+        // Fetch distinct departments (assuming this is for another purpose)
+        $departments = ApprehendingOfficer::select('department')->distinct()->get();
+    
+        // Get the authenticated user's information
+        $user = Auth::user();
+        $name = $user->name;
+        $department = $user->department;
+    
+        // Prepare data for monthly and yearly counts
+        $allMonths = collect(range(1, 12))->map(function ($month) {
+            return ['month' => $month, 'record_count' => 0];
+        });
+        
+        $countByMonth = TasFile::select(
+                DB::raw('MONTH(date_received) as month'),
+                DB::raw('COUNT(*) as record_count')
+            )
+            ->groupBy(DB::raw('MONTH(date_received)'))
+            ->get()
+            ->keyBy('month');
+    
+        $countByMonth = $allMonths->map(function ($month) use ($countByMonth) {
+            return $countByMonth->has($month['month']) ? $countByMonth[$month['month']] : $month;
+        });
+    
+        $countByMonth = $countByMonth->sortBy('month')->values();
+        
+        $yearlyData = TasFile::select(
+            DB::raw('IFNULL(YEAR(date_received), "Unknown") as year'),
+            DB::raw('COUNT(*) as record_count')
+        )
+        ->groupBy(DB::raw('IFNULL(YEAR(date_received), "Unknown")'))
+        ->get()
+        ->keyBy('year');
+          // Fetch data from TasFile model
+    $recentSalesTodayTasFile = TasFile::whereDate('created_at', today())
+    ->orderBy('created_at', 'desc')
+    ->paginate(10);
 
-        return view('index', compact('officers'));
+// Fetch data from CaseAdmitted model
+$recentSalesTodayCaseAdmitted = admitted::whereDate('created_at', today())
+    ->orderBy('created_at', 'desc')
+    ->paginate(10);
+    
+        // Return the view with all necessary data
+        return view('index', compact('recentSalesTodayTasFile', 'recentSalesTodayCaseAdmitted','departments','officers','yearlyData','countByMonth',  'name', 'department','departmentsData','tasFileData','admittedData','chartData','recentActivity',   'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek'));
     }
+    
 
     public function editViolation(Request $request, $id){
         $violation = Violation::find($id);
@@ -502,7 +506,7 @@ public function tasView()
                 'date_received' => 'required|date',
                 'contact_no' => 'required|string',
                 'plate_no' => 'required|string',
-                'status' => 'required|string|in:closed,in-progress,settled,unsettled',
+                'status' => 'nullable|string|in:closed,in-progress,settled,unsettled',
                 'file_attachment' => 'nullable|array',
                 'file_attachment.*' => 'nullable|file|max:512000',
                 'typeofvehicle' => 'required|string', // Add validation for typeofvehicle
@@ -1388,7 +1392,7 @@ public function editdepp(){
             'file_attach_existing.*' => 'nullable|file', 
             'fine_fee' => 'nullable|numeric', 
             'typeofvehicle' => 'nullable|string|max:255',  
-            'status' => 'nullable|string|in:in-progress,closed,settled,unsettled', 
+            'status' => 'nullable|string|in:in-progress,closed,settled ', 
         ]);
 
         // Attach files
@@ -2278,7 +2282,7 @@ public function editdepp(){
        {
            try {
                // Find the violation by ID
-               $violation = Admitted::findOrFail($id);
+               $violation = admitted::findOrFail($id);
        
                // Capture original data before updating
                $originalData = $violation->getOriginal();
@@ -2296,7 +2300,10 @@ public function editdepp(){
                    'status' => 'nullable|string|max:255',
                    'contact_no' => 'nullable|string|max:255',
                    'remarks.*.text' => 'nullable|string',
-                   'file_attach_existing.*' => 'nullable|file|max:512000', // Added file validation rules
+                   'file_attach_existing.*' => 'nullable|file',  
+                   'fine_fee' => 'nullable|numeric', 
+                   'typeofvehicle' => 'nullable|string|max:255',  
+                   'status' => 'nullable|string|in:in-progress,closed,settled ', 
                ]);
        
                // Attach files
@@ -2348,7 +2355,7 @@ public function editdepp(){
                        $violation->addViolation($newViolation);
                    }
                    // Refresh the model after adding new violations
-                   $violation = Admitted::findOrFail($id);
+                   $violation = admitted::findOrFail($id);
                }
        
                // Log history if there are changes
@@ -2377,6 +2384,7 @@ public function editdepp(){
                return response()->json(['error' => 'Error updating Violation: ' . $e->getMessage()], 500);
            }
        }
+       
        
       
        

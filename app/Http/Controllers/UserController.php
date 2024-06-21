@@ -80,34 +80,62 @@ class UserController extends Controller
         return response()->json($notifications);
     }
 
-    public function officersChart(Request $request)
+    public function getOfficersStatus(Request $request)
     {
-           // Determine if we should include inactive officers based on the request parameter
-           $showInactive = $request->query('showInactive', false);
+        $department = $request->input('department');
+    
+        $query = ApprehendingOfficer::query();
+    
+        if ($department) {
+            $query->where('department', $department);
+        }
+    
+        // Log the query so we can debug if needed
+        Log::info('Fetching officer status with query', [
+            'department' => $department,
+            'query' => $query->toSql(),
+            'bindings' => $query->getBindings()
+        ]);
+    
+        // Get the count of inactive and active officers
+        $inactiveCount = $query->where('isactive', 0)->count();
+        Log::info('Inactive count', ['count' => $inactiveCount]);
+    
+        // Since we've already used where() on the same query, we need to clone it or create a new instance
+        $activeQuery = ApprehendingOfficer::query();
+        if ($department) {
+            $activeQuery->where('department', $department);
+        }
+        $activeCount = $activeQuery->where('isactive', 1)->count();
+        Log::info('Active count', ['count' => $activeCount]);
+    
+        // Log the final counts
+        Log::info('Final officer status counts', [
+            'department' => $department,
+            'inactive_count' => $inactiveCount,
+            'active_count' => $activeCount
+        ]);
+    
+        return response()->json([
+            'inactive' => $inactiveCount,
+            'active' => $activeCount
+        ]);
+    }
+    
+    public function getRecentActivity()
+    {
+        // Fetch the most recent 5 activities with user details
+        $latestActivity = AuditTrail::with('user:id,fullname,username') // Eager load user with specific fields
+            ->orderBy('created_at', 'desc')
+            ->take(3) // Fetch the latest 5 activities
+            ->get();
+    
+        return response()->json($latestActivity);
+    }
+    
+   
 
-           // Default query to fetch all records
-           $query = ApprehendingOfficer::select('department')
-                                       ->selectRaw('COUNT(*) as total_cases')
-                                       ->groupBy('department')
-                                       ->orderBy('total_cases', 'desc');
-   
-           // Apply filter for inactive officers if requested
-           if (!$showInactive) {
-               $query->where('isactive', true);
-           }
-   
-           // Fetch the data
-           $officers = $query->get();
-   
-           // Prepare data in the required format for the chart
-           $data = $officers->map(function ($officer) {
-               return [
-                   'department' => $officer->department,
-                   'total_cases' => $officer->total_cases,
-               ];
-           });
-   
-           // Return the data as JSON response
-           return response()->json($data);
-       }
+    
+
+
 }

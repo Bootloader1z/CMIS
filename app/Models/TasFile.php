@@ -171,35 +171,7 @@ public function user()
     return $this->belongsTo(User::class);
 }
 
-public function handleDeletion()
-{
-    try {
-        // List of fields to check for deletion
-        $fieldsToCheck = [
-            'file_attach',
-        ];
-
-        // Check if any field is empty after deletion
-        $incomplete = false;
-        foreach ($fieldsToCheck as $field) {
-            if (!isset($this->$field) || empty($this->$field)) {
-                $incomplete = true;
-                break;
-            }
-        }
-
-        // Set symbols attribute accordingly
-        if ($incomplete) {
-            $this->symbols = 'incomplete';
-            $this->save();
-        }
-
-        \Log::info('Symbols attribute updated to incomplete due to data deletion.');
-    } catch (\Exception $e) {
-        \Log::error('Error handling deletion: ' . $e->getMessage());
-        throw new \Exception('Error handling deletion: ' . $e->getMessage());
-    }
-}
+ 
  
       public function addViolation($newViolation)
     {

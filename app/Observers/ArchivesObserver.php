@@ -13,7 +13,7 @@ class ArchivesObserver
     public function created(Archives $Archives)
     {
         // Log creation including details and added fields
-        $this->logHistory($Archives, 'CREATED', null, null, null, $Archives->toArray(), 'Created a New Archives Record !');
+        $this->logHistory($Archives, 'CREATED', 'No DATA', 'No DATA', 'No DATA', $Archives->toArray(), 'Created a New Archives Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class ArchivesObserver
             $oldValue = $Archives->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($Archives, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a Archives Field.');
+            $this->logHistory($Archives, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a Archives Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class ArchivesObserver
     public function deleted(Archives $Archives)
     {
         // Log deletion including details field
-        $this->logHistory($Archives, 'DELETED', null, null, null, $Archives->toArray(), 'Deleted a Archives record');
+        $this->logHistory($Archives, 'DELETED', 'No DATA', 'No DATA', 'No DATA', $Archives->toArray(), 'Deleted a Archives record');
     }
 
     /**
@@ -51,7 +51,7 @@ class ArchivesObserver
     protected function logHistory(Archives $Archives, string $action, ?string $field = null, $oldValue = null, $newValue = null, ?array $details = null, ?string $description = null)
     {
         $auditTrail = new AuditTrail();
-        $auditTrail->model = 'Case Archives';
+        $auditTrail->model = 'Case Archives Managed';
         $auditTrail->action = $action;
         $auditTrail->field = $field;
         $auditTrail->old_value = $oldValue;

@@ -225,10 +225,11 @@
         }
     });
 </script>
+
 <script>
 
         // Function to handle saving changes and reloading modal
-    function saveChangesAndReloadModal(violationId) {
+  function saveChangesAndReloadModal(violationId) {
         var form = $('#editViolationForm' + violationId);
         var formData = new FormData(form[0]);
 

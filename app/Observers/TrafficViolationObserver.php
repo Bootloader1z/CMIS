@@ -13,7 +13,7 @@ class TrafficViolationObserver
     public function created(TrafficViolation $TrafficViolation)
     {
         // Log creation including details and added fields
-        $this->logHistory($TrafficViolation, 'CREATED', null, null, null, $TrafficViolation->toArray(), 'Created a New TrafficViolation Record !');
+        $this->logHistory($TrafficViolation, 'CREATED', 'No DATA', 'No DATA', 'No DATA', $TrafficViolation->toArray(), 'Created a New TrafficViolation Record !');
     }
 
     /**
@@ -32,7 +32,7 @@ class TrafficViolationObserver
             $oldValue = $TrafficViolation->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($TrafficViolation, 'UPDATED', $field, $oldValue, $newValue, null, 'Updated a TrafficViolation Field.');
+            $this->logHistory($TrafficViolation, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a TrafficViolation Field.');
         }
     }
     
@@ -42,7 +42,7 @@ class TrafficViolationObserver
     public function TrafficViolation(TrafficViolation $TrafficViolation)
     {
         // Log deletion including details field
-        $this->logHistory($TrafficViolation, 'DELETED', null, null, null, $TrafficViolation->toArray(), 'TrafficViolation a Department record');
+        $this->logHistory($TrafficViolation, 'DELETED', 'No DATA', 'No DATA', 'No DATA', $TrafficViolation->toArray(), 'TrafficViolation a Department record');
     }
 
     /**

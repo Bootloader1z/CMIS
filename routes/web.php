@@ -51,6 +51,10 @@ Route::middleware(['auth'])->group(function () {
 
     // =============== ANALYTICS 
 
+
+Route::get('/data/recent', [UserController::class, 'getRecentData'])->name('data.recent');
+Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.filter');
+
     Route::get('/analytics', [DashboardController::class, 'analyticsDash'])->name('analytics.index');
     Route::get('/getChartData', [DashboardController::class, 'getChartData']);
    
@@ -62,8 +66,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/yearly-data/{year}', [DashboardController::class, 'showYearData'])->name('showYearData');
 
-    Route::get('/officers-chart', [UserController::class, 'officersChart'])->name('officers.chart');
+    Route::get('/officers-status', [UserController::class, 'getOfficersStatus'])->name('officers.status');
 
+    Route::get('/api/recent-activity', [UserController::class, 'getRecentActivity'])->name('api.recentActivity');
 
     // =============== USER PROFILE
 
@@ -112,7 +117,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('fetchingofficer');
 
     //                  AO/VIOLATION    =============  
-    Route::get('/officers', [DashboardController::class, 'tableofficerdash'])->name('officers.index');
+    
     // archives  =====
     
     Route::get('/archives/add', [DashboardController::class, 'archivesmanage'])->name('archivesmanage');
