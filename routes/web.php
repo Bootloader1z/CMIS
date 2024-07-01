@@ -211,6 +211,7 @@ Route::post('/chatstore/storeChat', [DashboardController::class, 'storeMessage']
 Route::get('/get-chat-data/{userId}', [DashboardController::class, 'getChatData'])->name('chat.messages');
 Route::get('/chat/{userId?}', [DashboardController::class, 'chatIndex'])->name('chat.index');
 
+Route::post('/announcements', [UserController::class, 'storeAnnounce'])->name('announcements.store');
 
 Route::get('/user/{user}/messages', [UserController::class, 'getUserMessages']);
  

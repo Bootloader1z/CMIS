@@ -127,24 +127,10 @@
                 </div>
             </div>
     
-            <!-- Date Received Chart -->
-            <div class="col-lg-6 mb-4">
-                <div class="card shadow">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-                        <h6 class="m-0 font-weight-bold">Date Received Chart</h6>   
-                        <button type="button" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#datengmgakaso">
-                            <i class="bi bi-calendar-date-fill fs-5"></i>
-                            Open Chart Modal
-                        </button>
-                    </div>
-                    <div class="card-body">
-                        <div id="dateReceivedChart" style="height: 250px;"></div>
-                    </div>
-                </div>
-            </div>
+           
     
             <!-- Violation Count Chart -->
-            <div class="col-lg-6 mb-4">
+            <div class="col-lg-12">
                 <div class="card shadow">
                     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                         <h6 class="m-0 font-weight-bold">Contested Cases Chart</h6>
@@ -270,7 +256,7 @@
     </div>
 </div>
 
-    <!-- Modal -->
+  <!-- Modal -->
 <div class="modal fade" id="comparisonModal" tabindex="-1" aria-labelledby="comparisonModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-lg" style="max-width: 90%;">
         <div class="modal-content">
@@ -283,58 +269,100 @@
             <div class="modal-body">
                 <div class="card mt-4 mb-4">
                     <div class="card-body">
-<div class="form-group mb-4">
-    <label for="month_1">Data 1:</label>
-    <div class="row">
-        <div class="col-sm-6">
-            <select class="form-control" id="year_1" name="year_1">
-                <option value="">Select Year</option>
-                @for ($year = 2020; $year <= date('Y'); $year++)
-                    <option value="{{ $year }}">{{ $year }}</option>
-                @endfor
-            </select>
-        </div>
-        <div class="col-sm-6">
-            <select class="form-control" id="month_1" name="month_1">
-                <option value="">Select Month</option>
-                @for ($i = 1; $i <= 12; $i++)
-                    <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
-                @endfor
-            </select>
+                        <div class="form-group mb-4">
+                            <label for="month_1">Data 1:</label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="year_1" name="year_1">
+                                        <option value="">Select Year</option>
+                                        @for ($year = 2020; $year <= date('Y'); $year++)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="month_1" name="month_1">
+                                        <option value="">Select Month</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="month_2">Data 2:</label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="year_2" name="year_2">
+                                        <option value="">Select Year</option>
+                                        @for ($year = 2020; $year <= date('Y'); $year++)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="month_2" name="month_2">
+                                        <option value="">Select Month</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="month_3">Data 3:</label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="year_3" name="year_3">
+                                        <option value="">Select Year</option>
+                                        @for ($year = 2020; $year <= date('Y'); $year++)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="month_3" name="month_3">
+                                        <option value="">Select Month</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group mb-4">
+                            <label for="month_4">Data 4:</label>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="year_4" name="year_4">
+                                        <option value="">Select Year</option>
+                                        @for ($year = 2020; $year <= date('Y'); $year++)
+                                            <option value="{{ $year }}">{{ $year }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="col-sm-6">
+                                    <select class="form-control" id="month_4" name="month_4">
+                                        <option value="">Select Month</option>
+                                        @for ($i = 1; $i <= 12; $i++)
+                                            <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Button to Generate Chart -->
+                        <button id="fetch-data" class="btn btn-primary mt-3">
+                            <i class="fas fa-chart-bar me-2"></i>Generate Chart
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
-<div class="form-group">
-    <label for="month_2">Data 2:</label>
-    <div class="row">
-        <div class="col-sm-6">
-            <select class="form-control" id="year_2" name="year_2">
-                <option value="">Select Year</option>
-                @for ($year = 2020; $year <= date('Y'); $year++)
-                    <option value="{{ $year }}">{{ $year }}</option>
-                @endfor
-            </select>
-        </div>
-        <div class="col-sm-6">
-            <select class="form-control" id="month_2" name="month_2">
-                <option value="">Select Month</option>
-                @for ($i = 1; $i <= 12; $i++)
-                    <option value="{{ $i }}">{{ date('F', mktime(0, 0, 0, $i, 10)) }}</option>
-                @endfor
-            </select>
-        </div>
-    </div>              
-</div>
-<!-- Button to Generate Chart -->
-<button id="fetch-data" class="btn btn-primary mt-3">
-    <i class="fas fa-chart-bar me-2"></i>Generate Chart
-</button>  
-                            </div>
-                        </div>
-                    </div>
-                </div>      
-
-  
 
  
  
@@ -518,7 +546,7 @@ $('#fetch-vehicle').click(function() {
             chart: {
                 type: 'pie',
                 height: 400,
-                toolba0r: {
+                toolbar: {
                     show: false,
                 },
             },
@@ -529,7 +557,7 @@ $('#fetch-vehicle').click(function() {
         var chart = new ApexCharts(document.querySelector("#violationCountChart"), options);
         chart.render();
 
-        function fetchData(month1, year1, month2, year2) {
+        function fetchData(month1, year1, month2, year2, month3, year3, month4, year4) {
             $.ajax({
                 url: '{{route('damingmgakaso')}}',
                 method: 'GET',
@@ -537,7 +565,11 @@ $('#fetch-vehicle').click(function() {
                     month_1: month1,
                     year_1: year1,
                     month_2: month2,
-                    year_2: year2
+                    year_2: year2,
+                    month_3: month3,
+                    year_3: year3,
+                    month_4: month4,
+                    year_4: year4
                 },
                 success: function (data) {
                     chart.updateSeries(data.series);
@@ -556,11 +588,15 @@ $('#fetch-vehicle').click(function() {
             var year1 = document.getElementById('year_1').value;
             var month2 = document.getElementById('month_2').value;
             var year2 = document.getElementById('year_2').value;
+            var month3 = document.getElementById('month_3').value;
+            var year3 = document.getElementById('year_3').value;
+            var month4 = document.getElementById('month_4').value;
+            var year4 = document.getElementById('year_4').value;
 
-            if (month1 && year1 && month2 && year2) {
-                fetchData(month1, year1, month2, year2);
+            if (month1 && year1 && month2 && year2 && month3 && year3 && month4 && year4) {
+                fetchData(month1, year1, month2, year2, month3, year3, month4, year4);
             } else {
-                toastr.error('Please select both months and years.');
+                toastr.error('Please select all months and years.');
             }
         });
 
@@ -600,7 +636,6 @@ $('#fetch-vehicle').click(function() {
         }
     });
 </script>
-
 <script>
  document.addEventListener('DOMContentLoaded', function () {
     const rankingTableBody = document.getElementById('rankingTableBody');

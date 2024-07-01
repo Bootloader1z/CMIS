@@ -134,7 +134,22 @@ class UserController extends Controller
     }
     
    
+    public function storeAnnounce(Request $request)
+    {
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'is_active' => 'required|boolean',
+        ]);
 
+        $announcement = new Announcement();
+        $announcement->title = $request->input('title');
+        $announcement->content = $request->input('content');
+        $announcement->is_active = $request->input('is_active');
+        $announcement->save();
+
+        return response()->json(['success' => true]);
+    }
     
 
 

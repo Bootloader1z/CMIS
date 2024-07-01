@@ -59,19 +59,7 @@ class DashboardController extends Controller
 
     public function indexa(Request $request)
     {
-        // Assuming this is the AJAX request part
-        if ($request->ajax()) {
-            // Fetch paginated officers for AJAX request
-            $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
-                ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
-                ->selectRaw('COUNT(tas_files.apprehending_officer) as total_cases')
-                ->selectRaw('GROUP_CONCAT(tas_files.case_no) as case_numbers')
-                ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
-                ->orderByDesc('total_cases')
-                ->paginate(10); // Paginate with 10 officers per page
-    
-            return view('officers.table', compact('officers'))->render();
-        }
+        
     
         // For non-AJAX requests (normal page load)
         $revenueThisMonth = TasFile::whereMonth('date_received', date('m'))->count();
@@ -114,14 +102,16 @@ class DashboardController extends Controller
         // Fetching the data created on today's date (assuming this is for another purpose)
         $salesToday = TasFile::whereDate('created_at', today())->get();
         
-        // Fetch officers data with total cases grouped by officer and department
+        $limit = request()->input('limit', 10); // Default to 10 if no limit is specified
         $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
             ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
             ->selectRaw('COUNT(tas_files.apprehending_officer) as total_cases')
             ->selectRaw('GROUP_CONCAT(tas_files.case_no) as case_numbers')
             ->groupBy('tas_files.apprehending_officer', 'apprehending_officers.department')
             ->orderByDesc('total_cases')
-            ->paginate(10); // Paginate with 10 officers per page
+            ->limit($limit)
+            ->get();
+        
         
         // Fetch distinct departments (assuming this is for another purpose)
         $departments = ApprehendingOfficer::select('department')->distinct()->get();
@@ -2575,19 +2565,23 @@ public function editdepp(){
         }
     }
     
-    
+ 
     public function fetchViolations(Request $request)
     {
         $month1 = $request->query('month_1');
         $year1 = $request->query('year_1');
         $month2 = $request->query('month_2');
         $year2 = $request->query('year_2');
-
+        $month3 = $request->query('month_3');
+        $year3 = $request->query('year_3');
+        $month4 = $request->query('month_4');
+        $year4 = $request->query('year_4');
+    
         // Validate inputs
-        if (!$month1 || !$year1 || !$month2 || !$year2) {
+        if (!$month1 || !$year1 || !$month2 || !$year2 || !$month3 || !$year3 || !$month4 || !$year4) {
             return response()->json(['error' => 'Invalid months or years selected'], 400);
         }
-
+    
         // Fetch violations for the selected months and years
         $violationsMonth1 = TasFile::whereMonth('date_received', $month1)
             ->whereYear('date_received', $year1)
@@ -2595,16 +2589,24 @@ public function editdepp(){
         $violationsMonth2 = TasFile::whereMonth('date_received', $month2)
             ->whereYear('date_received', $year2)
             ->count();
-
+        $violationsMonth3 = TasFile::whereMonth('date_received', $month3)
+            ->whereYear('date_received', $year3)
+            ->count();
+        $violationsMonth4 = TasFile::whereMonth('date_received', $month4)
+            ->whereYear('date_received', $year4)
+            ->count();
+    
         // Prepare data for ApexCharts
         $data = [
-            'series' => [$violationsMonth1, $violationsMonth2],
+            'series' => [$violationsMonth1, $violationsMonth2, $violationsMonth3, $violationsMonth4],
             'labels' => [
                 date('F Y', mktime(0, 0, 0, $month1, 10, $year1)),
-                date('F Y', mktime(0, 0, 0, $month2, 10, $year2))
+                date('F Y', mktime(0, 0, 0, $month2, 10, $year2)),
+                date('F Y', mktime(0, 0, 0, $month3, 10, $year3)),
+                date('F Y', mktime(0, 0, 0, $month4, 10, $year4))
             ],
         ];
-
+    
         // Return data as JSON
         return response()->json($data);
     }

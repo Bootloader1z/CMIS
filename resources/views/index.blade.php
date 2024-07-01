@@ -23,6 +23,81 @@
         </ol>
       </nav>
     </div><!-- End Page Title -->
+{{-- 
+<!-- Button to Open the Modal -->
+<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#announcementModal">
+    Create Announcement
+</button> --}}
+
+<!-- The Modal -->
+<div class="modal fade" id="announcementModal" tabindex="-1" aria-labelledby="announcementModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="announcementModalLabel">Create Announcement</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="announcementForm" action="{{ route('announcements.store') }}" method="POST">
+                    @csrf
+
+                    <div class="form-group mb-3">
+                        <label for="title">Title</label>
+                        <input type="text" name="title" id="title" class="form-control" value="{{ old('title') }}" required>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="content">Content</label>
+                        <textarea name="content" id="content" class="form-control" rows="4" required>{{ old('content') }}</textarea>
+                    </div>
+
+                    <div class="form-group mb-3">
+                        <label for="is_active">Status</label>
+                        <select name="is_active" id="is_active" class="form-control" required>
+                            <option value="1" {{ old('is_active') == 1 ? 'selected' : '' }}>Active</option>
+                            <option value="0" {{ old('is_active') == 0 ? 'selected' : '' }}>Inactive</option>
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Announcement</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include jQuery if not already included -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<script>
+    $(document).ready(function () {
+        $('#announcementForm').on('submit', function (e) {
+            e.preventDefault();
+
+            $.ajax({
+                url: $(this).attr('action'),
+                method: $(this).attr('method'),
+                data: $(this).serialize(),
+                dataType: 'json',
+                success: function (data) {
+                    if (data.success) {
+                        alert('Announcement created successfully!');
+                        $('#announcementModal').modal('hide');
+                        $('#announcementForm')[0].reset();
+                    } else {
+                        alert('An error occurred. Please try again.');
+                    }
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error:', error);
+                    alert('An error occurred. Please try again.');
+                }
+            });
+        });
+    });
+</script>
 
     <section class="section dashboard">
       <div class="row">
@@ -644,10 +719,15 @@ if (activity.field == 'symbols') {
                             <h5 class="card-title">Top Apprehending Officers <span>| Cases</span></h5>
                             <!-- Filter buttons -->
                             <div class="mb-3">
-                                <div class="btn-group" role="group" aria-label="Filter by">
-                                    <input type="text" id="searchInput" class="form-control mt-2" placeholder="Search by details...">
+                                <div class="input-group">
+                                    <input type="text" id="searchInput" class="form-control" placeholder="Search by details...">
+                                    <label for="limitSelect" class="input-group-text">Show Entries</label>
+                                    <select id="limitSelect" class="form-select form-select">
+                                        <option value="10">10</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
                                 </div>
-                               
                             </div>
                             <div class="table-responsive">
                                 <table id="officers-table" class="table table-striped table-hover custom-table">
@@ -662,7 +742,7 @@ if (activity.field == 'symbols') {
                                     <tbody>
                                         @foreach($officers as $index => $officer)
                                         <tr class="{{ $index < 3 ? 'top-officer' : '' }}">
-                                            <th scope="row">{{ $index + $officers->firstItem() }}</th>
+                                            <th scope="row">{{ $index + 1 }}</th>
                                             <td>
                                                 <a href="#" data-bs-toggle="modal" data-bs-target="#officerModal{{ $index }}">{{ $officer->apprehending_officer ?: 'Unknown' }}</a>
                                             </td>
@@ -672,15 +752,6 @@ if (activity.field == 'symbols') {
                                         @endforeach
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                        <div class="card-footer text-muted small d-flex justify-content-between align-items-center mt-2">
-                            <div>
-                                <p id="pagination-info">Showing {{ $officers->firstItem() }} to {{ $officers->lastItem() }} of {{ $officers->total() }} officers.</p>
-                                <p>For more detailed information, click on the officer's name.</p>
-                            </div>
-                            <div class="pagination mt-2">
-                                {{ $officers->links() }} <!-- Laravel pagination links -->
                             </div>
                         </div>
                     </div>
@@ -742,12 +813,9 @@ if (activity.field == 'symbols') {
         @else
         <p>No officers found.</p>
         @endif
-       
+        
         <script>
             $(document).ready(function() {
-                let currentPage = {{ $officers->currentPage() }};
-                let lastPage = {{ $officers->lastPage() }};
-        
                 // Search functionality
                 $('#searchInput').on('keyup', function() {
                     let searchText = $(this).val().toLowerCase();
@@ -756,43 +824,14 @@ if (activity.field == 'symbols') {
                     });
                 });
         
-                $('#btn-prev').click(function(e) {
-                    e.preventDefault();
-                    if (currentPage > 1) {
-                        currentPage--;
-                        fetchOfficers(currentPage);
-                    }
+                // Change the limit of officers displayed
+                $('#limitSelect').on('change', function() {
+                    let limit = $(this).val();
+                    window.location.href = "{{ route('dashboard') }}?limit=" + limit;
                 });
-        
-                $('#btn-next').click(function(e) {
-                    e.preventDefault();
-                    if (currentPage < lastPage) {
-                        currentPage++;
-                        fetchOfficers(currentPage);
-                    }
-                });
-        
-                function fetchOfficers(page) {
-                    $.ajax({
-                        url: "{{ route('officers.index') }}?page=" + page, // Replace with your route name
-                        success: function(data) {
-                            $('#officers-table tbody').html(data);
-                            updatePaginationState(page);
-                        },
-                        error: function(xhr, status, error) {
-                            console.error('Error fetching officers:', error);
-                        }
-                    });
-                }
-        
-                function updatePaginationState(page) {
-                    $('#pagination-info').html(`Showing ${((page - 1) * {{ $officers->perPage() }}) + 1} to ${Math.min(page * {{ $officers->perPage() }}, {{ $officers->total() }})} of {{ $officers->total() }} officers`);
-                    $('#btn-prev').attr('disabled', page === 1);
-                    $('#btn-next').attr('disabled', page === lastPage);
-                }
             });
         </script>
-
+        
 
       </div>
     </section>
