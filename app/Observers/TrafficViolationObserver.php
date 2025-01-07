@@ -32,7 +32,7 @@ class TrafficViolationObserver
             $oldValue = $TrafficViolation->getOriginal($field);
     
             // Log history for other fields
-            $this->logHistory($TrafficViolation, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a TrafficViolation Field.');
+           // $this->logHistory($TrafficViolation, 'UPDATED', $field, $oldValue, $newValue, 'No DATA', 'Updated a TrafficViolation Field.');
         }
     }
     

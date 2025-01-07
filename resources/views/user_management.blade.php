@@ -183,13 +183,18 @@
                 _token: $('input[name="_token"]').val()
             };
             $.ajax({
-                url: "{{route('store.user')}}",
+                url: "{{route('store.userzx')}}",
                 type: 'POST',
                 data: formData,
-                success: function(response) {
-                    $('#addUserModal').modal('hide');
-                    alert('User added successfully!');
-                    location.reload();
+                success: function(response, status, xhr) {
+                    if (xhr.status === 201) {
+                        $('#addUserModal').modal('hide');
+                        alert('User added successfully!');
+                        location.reload();
+                    } else {
+                        // You could optionally handle other success status codes or scenarios here
+                        alert('An unexpected response was received from the server.');
+                    }
                 },
                 error: function(xhr, status, error) {
                     // Show the error message from the server

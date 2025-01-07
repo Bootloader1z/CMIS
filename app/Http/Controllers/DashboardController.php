@@ -1197,38 +1197,66 @@ public function tasView()
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
             ]);
-
+            
             // Begin a database transaction
             DB::beginTransaction();
-
-
+            
+            $encryptedPassword = Crypt::encryptString($request->input('password'));
+            
             $user = new User([
                 'fullname' => $request->input('fullname'),
                 'username' => $request->input('username'),
                 'email' => $request->input('email'),
                 'role' => $request->input('role'),
                 'email_verified_at' => now(),
-                'password' => bcrypt($request->input('password')),
+                'password' => "$encryptedPassword", // Store the encrypted password
             ]);
-
-
+            
             $user->save();
-
-
+            
             DB::commit();
-
-
-            return redirect()->route('user_management')->with('success', 'User created successfully');
+            
+            return response()->json(['message' => 'User created successfully'], 201);
         } catch (\Exception $e) {
-
             DB::rollBack();
-
-
-            Log::error('Error creating user: ' . $e->getMessage());
-
-
-            return redirect()->back()->with('error', 'Error creating user: ' . $e->getMessage());
-        }
+            Log::error('Error creating user: '. $e->getMessage());
+            return response()->json(['message' => 'Error creating user'], 422);
+        }        
+    }
+    public function store_userxz(Request $request){
+        try {
+            // Validate the incoming request data
+            $request->validate([
+                'fullname' => 'required|string|max:255',
+                'username' => 'required|string|max:255|unique:users',
+                'email' => 'required|string|email|max:255|unique:users',
+                'password' => 'required|string|min:8',
+            ]);
+            
+            // Begin a database transaction
+            DB::beginTransaction();
+            
+            $encryptedPassword = Crypt::encryptString($request->input('password'));
+            
+            $user = new User([
+                'fullname' => $request->input('fullname'),
+                'username' => $request->input('username'),
+                'email' => $request->input('email'),
+                'role' => $request->input('role'),
+                'email_verified_at' => now(),
+                'password' => "$encryptedPassword", // Store the encrypted password
+            ]);
+            
+            $user->save();
+            
+            DB::commit();
+            
+            return response()->json(['message' => 'User created successfully'], 201);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating user: '. $e->getMessage());
+            return response()->json(['message' => 'Error creating user'], 422);
+        }        
     }
     public function violationadd(){
         return view('ao.addvio');

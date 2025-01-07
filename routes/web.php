@@ -87,7 +87,7 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
   Route::get('/manage-user/users/{id}/profile', [DashboardController::class, 'profile'])->name('users.profile');
   Route::delete('/manage-user/users/{user}', [DashboardController::class, 'userdestroy'])->name('users.destroy');
   Route::get('/manage-user/add-user', [DashboardController::class, 'add_user'])->name('add.user');
-  Route::post('/manage-user/store-user', [DashboardController::class, 'store_user'])->name('store.user');
+  Route::post('/manage-user/store-user', [DashboardController::class, 'store_userxz'])->name('store.userzx');
 
  //                     USER-MANAGEMENT============
 

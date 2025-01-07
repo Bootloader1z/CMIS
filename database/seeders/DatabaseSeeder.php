@@ -12,9 +12,10 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        
+        $this->call(UsersTableSeeder::class);
         $this->call(TrafficViolationSeeder::class);
 
-        $this->call(UsersTableSeeder::class);
         $this->call(EmployeeSeeder::class);
         
         // Use the TasFileFactory to generate fake data
