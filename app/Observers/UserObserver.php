@@ -31,7 +31,7 @@ class UserObserver
 
         foreach ($changes as $field => $newValue) {
             // Skip logging 'updated_at' and 'password' field changes
-            if ($field === 'updated_at' || $field === 'password' || $field === 'isactive') {
+            if ($field === 'updated_at' || $field === 'password') {
                 continue;
             }
 
@@ -39,7 +39,6 @@ class UserObserver
 
             // Log history for other fields
             $this->logHistory($user, 'UPDATED', $field, $oldValue, $newValue, 'A User details or information has been edited.!', 'Updated user details.');
-
         }
     }
 

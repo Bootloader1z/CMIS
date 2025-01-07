@@ -18,7 +18,7 @@ class CreateAuditTrailsTable extends Migration
             $table->string('field')->nullable();
             $table->text('old_value')->nullable();
             $table->text('new_value')->nullable();
-            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });

@@ -23,7 +23,7 @@ class UsersTableSeeder extends Seeder
                 'fullname' => 'Super Admin',
                 'username' => 'admin',
                 'email' => 'administrator@tas.com',
-                'password' => Crypt::encryptString('admin123'),
+                'password' => Crypt::encryptString('P@s$w0rd123'),
                 'email_verified_at' => '2024-04-25 13:15:39',
                 'role' => 9,
                 'isactive' => 0,
