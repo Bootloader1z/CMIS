@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Crypt;
-
+use Illuminate\Support\Facades\Cookie;
 
 
 class AuthController extends Controller
@@ -30,14 +30,16 @@ public function login(Request $request)
         $request->validate([
             'username' => 'required',
             'password' => 'required',
+            'remember' => 'nullable|in:true,false',
         ]);
 
         $username = $request->input('username');
         $password = $request->input('password');
+        $remember = $request->input('remember', false);
 
         // Retrieve the user by username
         $user = User::where('username', $username)->first();
-
+        // dd($request);
         if ($user) {
             // Decrypt the stored password
             $decryptedPassword = Crypt::decryptString($user->password);
@@ -45,21 +47,39 @@ public function login(Request $request)
             // Check if the provided password matches the decrypted password
             if ($password === $decryptedPassword) {
                 // Login the user
-                Auth::login($user);
+                Auth::login($user, $remember);
                 $user->update(['isactive' => 1]);
-
-                // Redirect based on user role
-                return redirect($this->redirectDash());
+                // $user->update(['isactive' => 1]);
+                // Return success response
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Login successful. Please wait for Redirecting Page!',
+                    'redirect' => $this->redirectDash(),
+                ]);
             } else {
-                throw new \Exception('Invalid credentials. Please try again.');
+                // Invalid credentials
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Invalid username or password.',
+                ], 401);
             }
         } else {
-            throw new \Exception('Invalid credentials. Please try again.');
+            // User not found
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid username or password.',
+            ], 401);
         }
     } catch (\Exception $e) {
-        return redirect()->back()->withInput()->with('error', $e->getMessage());
+        \Log::error('Login Validation Error: ' . json_encode($e->getMessage()));
+        return response()->json([
+            'success' => false,
+            'message' => 'An error occurred. Please try again.',
+        ], 500);
+
     }
 }
+
 
 public function redirectDash()
 {
@@ -101,6 +121,7 @@ function logoutx(){
     $user->update(['isactive' => 0]);
     Session::flush();
     Auth::logout();
+    Cookie::queue(Cookie::forget('remember_token'));
     return redirect('/');
  }
 }

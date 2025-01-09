@@ -36,7 +36,7 @@ class DashboardController extends Controller
         Log::info('getViolations method called', ['date' => $request->input('date')]);
 
         $date = $request->input('date');
-        
+
         // Log the query being executed
         Log::info('Fetching violations for date', ['date' => $date]);
 
@@ -59,29 +59,29 @@ class DashboardController extends Controller
 
     public function indexa(Request $request)
     {
-        
-    
+
+
         // For non-AJAX requests (normal page load)
         $revenueThisMonth = TasFile::whereMonth('date_received', date('m'))->count();
         $previousMonthRevenue = TasFile::whereMonth('date_received', Carbon::now()->subMonth())->count();
-        
+
         // Fetch recent activity (assumed to be last 5 records created today)
         $recentActivity = TasFile::whereDate('created_at', today())->latest()->take(5)->get();
-        
+
         // Count customers received this year
         $customersThisYear = TasFile::whereYear('date_received', now())->count();
-        
-        
+
+
         // Calculate average sales per day for the last week
         $averageSalesLastWeek = TasFile::whereBetween('created_at', [Carbon::now()->subDays(7)->startOfDay(), Carbon::now()->subDays(1)->endOfDay()])->count() / 7;
-        
-        
+
+
         // Fetch all admitted data
         $admittedData = Admitted::all();
-        
+
         // Fetch all TasFile data (considering whether this is needed)
         $tasFileData = TasFile::all();
-        
+
         // Prepare chart data based on admitted data
         $chartData = $admittedData->map(function ($item) {
             $violationCount = 0;
@@ -95,13 +95,13 @@ class DashboardController extends Controller
                 'transaction_date' => $item->transaction_date,
             ];
         });
-        
+
         // Fetch all departments data (assuming this is needed)
         $departmentsData = ApprehendingOfficer::all();
-        
+
         // Fetching the data created on today's date (assuming this is for another purpose)
         $salesToday = TasFile::whereDate('created_at', today())->get();
-        
+
         $limit = request()->input('limit', 10); // Default to 10 if no limit is specified
         $officers = TasFile::leftJoin('apprehending_officers', 'tas_files.apprehending_officer', '=', 'apprehending_officers.officer')
             ->select('tas_files.apprehending_officer', 'apprehending_officers.department')
@@ -111,21 +111,21 @@ class DashboardController extends Controller
             ->orderByDesc('total_cases')
             ->limit($limit)
             ->get();
-        
-        
+
+
         // Fetch distinct departments (assuming this is for another purpose)
         $departments = ApprehendingOfficer::select('department')->distinct()->get();
-    
+
         // Get the authenticated user's information
         $user = Auth::user();
         $name = $user->name;
         $department = $user->department;
-    
+
         // Prepare data for monthly and yearly counts
         $allMonths = collect(range(1, 12))->map(function ($month) {
             return ['month' => $month, 'record_count' => 0];
         });
-        
+
         $countByMonth = TasFile::select(
                 DB::raw('MONTH(date_received) as month'),
                 DB::raw('COUNT(*) as record_count')
@@ -133,13 +133,13 @@ class DashboardController extends Controller
             ->groupBy(DB::raw('MONTH(date_received)'))
             ->get()
             ->keyBy('month');
-    
+
         $countByMonth = $allMonths->map(function ($month) use ($countByMonth) {
             return $countByMonth->has($month['month']) ? $countByMonth[$month['month']] : $month;
         });
-    
+
         $countByMonth = $countByMonth->sortBy('month')->values();
-        
+
         $yearlyData = TasFile::select(
             DB::raw('IFNULL(YEAR(date_received), "Unknown") as year'),
             DB::raw('COUNT(*) as record_count')
@@ -156,11 +156,11 @@ class DashboardController extends Controller
 $recentSalesTodayCaseAdmitted = admitted::whereDate('created_at', today())
     ->orderBy('created_at', 'desc')
     ->paginate(10);
-    
+
         // Return the view with all necessary data
         return view('index', compact('recentSalesTodayTasFile', 'recentSalesTodayCaseAdmitted','departments','officers','yearlyData','countByMonth',  'name', 'department','departmentsData','tasFileData','admittedData','chartData','recentActivity',   'salesToday', 'revenueThisMonth', 'customersThisYear', 'averageSalesLastWeek'));
     }
-    
+
 
     public function editViolation(Request $request, $id){
         $violation = Violation::find($id);
@@ -225,23 +225,23 @@ $recentSalesTodayCaseAdmitted = admitted::whereDate('created_at', today())
     public function reportsview(Request $request) {
         // Get the month parameter from the request, defaulting to the current month if not provided
         $selectedMonth = $request->input('date_received', Carbon::now()->format('Y-m'));
-    
+
         // Determine the start and end dates of the selected month
         $startDate = Carbon::parse($selectedMonth . '-01')->startOfMonth();
         $endDate = Carbon::parse($selectedMonth . '-01')->endOfMonth();
-    
+
         // Query TasFiles with date range
         $tasFiles = TasFile::whereBetween('date_received', [$startDate, $endDate])->get();
-    
+
         // Initialize total fine per violation and total fine for all data for the month
         $totalFinePerViolation = collect();
         $totalFineForMonth = 0;
-    
+
         // Process each TasFile to attach related violations
         foreach ($tasFiles as $tasFile) {
             $violations = json_decode($tasFile->violation);
             $relatedViolations = collect(); // Initialize related violations collection
-    
+
             if ($violations) {
                 if (is_array($violations)) {
                     $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
@@ -249,21 +249,21 @@ $recentSalesTodayCaseAdmitted = admitted::whereDate('created_at', today())
                     $relatedViolations = TrafficViolation::where('code', $violations)->get();
                 }
             }
-    
+
             // Calculating total partial fine per violation for each TasFile
             $totalFinePerFile = $relatedViolations->sum('fine');
             $totalFinePerViolation = $totalFinePerViolation->merge($relatedViolations->pluck('fine'));
-    
+
             // Update the total fine for all data for the month
             $totalFineForMonth += $totalFinePerFile;
-    
+
             $tasFile->relatedViolations = $relatedViolations;
             $tasFile->partialFinePerFile = $totalFinePerFile;
         }
-    
+
         // Format monthYear based on the selected month
         $monthYear = strtoupper(Carbon::parse($selectedMonth)->format('F Y'));
-        
+
         return view('sub.reports', [
             'tasFiles' => $tasFiles,
             'monthYear' => $monthYear,
@@ -271,14 +271,14 @@ $recentSalesTodayCaseAdmitted = admitted::whereDate('created_at', today())
             'totalFineForMonth' => $totalFineForMonth
         ]);
     }
-       
+
 public function tasView()
 {
     try {
         $pageSize = 15; // Define the default page size
         $tasFiles = TasFile::all()->sortByDesc('case_no');
         $officers = collect();
-        
+
         foreach ($tasFiles as $tasFile) {
             // Update completeness symbols for each TasFile
             $tasFile->checkCompleteness();
@@ -290,7 +290,7 @@ public function tasView()
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
             $officers = $officers->merge($officersForFile);
             $tasFile->relatedofficer = $officersForFile;
-            
+
             if (is_string($tasFile->remarks)) {
                 $remarks = json_decode($tasFile->remarks, true);
                 if ($remarks === null) {
@@ -322,18 +322,18 @@ public function tasView()
         throw new \Exception('Error viewing TAS: ' . $e->getMessage());
     }
 }
-    
+
     // public function tasView(){
     //     $pageSize = 15; // Define the default page size
     //     $tasFiles = TasFile::all()->sortByDesc('case_no');
     //     $officers = collect();
-        
+
     //     foreach ($tasFiles as $tasFile) {
     //         $officerName = $tasFile->apprehending_officer;
     //         $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
     //         $officers = $officers->merge($officersForFile);
     //         $tasFile->relatedofficer = $officersForFile;
-            
+
     //         if (is_string($tasFile->remarks)) {
     //             $remarks = json_decode($tasFile->remarks, true);
     //             if ($remarks === null) {
@@ -391,13 +391,13 @@ public function tasView()
         $pageSize = 15; // Define the default page size
         $admitted = Admitted::all()->sortByDesc('admittedno');
         $officers = collect();
-        
+
         foreach ($admitted as $admit) {
             $officerName = $admit->apprehending_officer;
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
             $officers = $officers->merge($officersForFile);
             $admit->relatedofficer = $officersForFile;
-            
+
             if (is_string($admit->remarks)) {
                 $remarks = json_decode($admit->remarks, true);
                 if ($remarks === null) {
@@ -409,7 +409,7 @@ public function tasView()
                 $remarks = [];
             }
             $admit->remarks = $remarks;
-    
+
             $violations = json_decode($admit->violation);
             if ($violations) {
                 if (is_array($violations)) {
@@ -422,7 +422,7 @@ public function tasView()
             }
             $admit->relatedViolations = $relatedViolations;
         }
-    
+
         return view('admitted.view', compact('admitted'));
     }
     public function saveRemarks(Request $request) {
@@ -430,7 +430,7 @@ public function tasView()
             'remarks' => 'required|string',
             'tas_file_id' => 'required|exists:tas_files,id',
         ]);
-    
+
         try {
             $id = $request->input('tas_file_id');
             $remarks = $request->input('remarks');
@@ -440,11 +440,11 @@ public function tasView()
             $newRemark = $remarks . ' - ' . $timestamp .' - '. Auth::user()->fullname;
             $existingRemarks[] = $newRemark;
             $updatedRemarksJson = json_encode($existingRemarks);
-    
+
             DB::beginTransaction();
             $tasFile->update(['remarks' => $updatedRemarksJson]);
             DB::commit();
-    
+
             // Send back a response with 201 Created status code
             // Here, we are also returning a success message in the response body
             return response()->json(['message' => 'Remarks saved successfully.'], 201);
@@ -460,7 +460,7 @@ public function tasView()
             'remarks' => 'required|string',
             'admitted_dataid' => 'required|exists:admitteds,id',
         ]);
-    
+
         try {
             $id = $request->input('admitted_dataid');
             $remarks = $request->input('remarks');
@@ -470,11 +470,11 @@ public function tasView()
             $newRemark = $remarks . ' - ' . $timestamp .' - '. Auth::user()->fullname;
             $existingRemarks[] = $newRemark;
             $updatedRemarksJson = json_encode($existingRemarks);
-    
+
             DB::beginTransaction();
             $tasFile->update(['remarks' => $updatedRemarksJson]);
             DB::commit();
-    
+
             // Send back a response with 201 Created status code
             // Here, we are also returning a success message in the response body
             return response()->json(['message' => 'Remarks saved successfully.'], 201);
@@ -549,13 +549,13 @@ public function tasView()
             return redirect()->back()->with('error', $e->getMessage());
         }
     }
- ///////////////////////////////////////////////////=============================================================================================================================       
- ///////////////////////////////////////////////////=============================================================================================================================    
- ///////////////////////////////////////////////////=============================================================================================================================    
- ///////////////////////////////////////////////////=============================================================================================================================    
- ///////////////////////////////////////////////////=============================================================================================================================    
- ///////////////////////////////////////////////////=============================================================================================================================    
- ///////////////////////////////////////////////////=============================================================================================================================   
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
+ ///////////////////////////////////////////////////=============================================================================================================================
  ///////////////////////////////////////////////////////=============================================================================================================================
     public function archivesmanage(){
         $officers = ApprehendingOfficer::select('officer', 'department')->get();
@@ -632,14 +632,14 @@ public function tasView()
         $pageSize = 15; // Define the default page size
         $archives = archives::all()->sortByDesc('case_no');
         $officers = collect();
-        
+
         foreach ($archives as $archive) {
             $archive->checkCompleteness();
             $officerName = $archive->apprehending_officer;
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
             $officers = $officers->merge($officersForFile);
             $archive->relatedofficer = $officersForFile;
-            
+
             if (is_string($archive->remarks)) {
                 $remarks = json_decode($archive->remarks, true);
                 if ($remarks === null) {
@@ -672,7 +672,7 @@ public function tasView()
             'remarks' => 'required|string',
             'archives_dataid' => 'required|exists:archives,id',
         ]);
-    
+
         try {
             $id = $request->input('archives_dataid');
             $remarks = $request->input('remarks');
@@ -682,11 +682,11 @@ public function tasView()
             $newRemark = $remarks . ' - ' . $timestamp .' - '. Auth::user()->fullname;
             $existingRemarks[] = $newRemark;
             $updatedRemarksJson = json_encode($existingRemarks);
-    
+
             DB::beginTransaction();
             $archives->update(['remarks' => $updatedRemarksJson]);
             DB::commit();
-    
+
             // Send back a response with 201 Created status code
             // Here, we are also returning a success message in the response body
             return response()->json(['message' => 'Remarks saved successfully.'], 201);
@@ -710,7 +710,7 @@ public function tasView()
             if ($violations) {
                 $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
             }
-            
+
             $remarks = json_decode($archives->remarks);
             // Check if $remarks is an array
             if (is_array($remarks)) {
@@ -750,7 +750,7 @@ public function tasView()
 
             // Decode remarks if they are JSON-encoded
             $remarks = json_decode($recentViolationsToday->remarks, true);
-            
+
             // Check if $remarks is an array and reverse it if so
             if (is_array($remarks)) {
                 $remarks = array_reverse($remarks);
@@ -767,30 +767,30 @@ public function tasView()
             return response()->view('errors.404', [], 404);
         }
     }
-    
+
     public function updatearchives(){
         // Fetch all traffic violations
-        
-        
+
+
         // Fetch recent TasFiles ordered by case number descending
         $recentViolationsToday = archives::orderBy('tas_no', 'desc')->get();
-        
+
         // Fetch all codes (assuming TrafficViolation model provides codes)
         $violation = TrafficViolation::all();
-        
+
         // Prepare a collection for officers
         $officers = collect();
-       
-        
+
+
         // Iterate through each TrafficViolation record
         foreach ($recentViolationsToday as $tasFile) {
             $officerName = $tasFile->apprehending_officer;
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
             $officers = $officers->merge($officersForFile);
             $tasFile->relatedofficer = $officersForFile;
-            
+
         }
-  
+
         // Pass data to the view, including the new variable $violationData
         return view('case_archive.edit', compact('recentViolationsToday', 'violation', 'officers'));
     }
@@ -798,15 +798,15 @@ public function tasView()
         try {
             // Log the request data for debugging
             \Log::info('Request data: ', $request->all());
-    
+
             $archives = archives::findOrFail($id);
-    
+
             // Log the received status for debugging
             \Log::info('Received status: ' . $request->status);
-    
+
             $archives->status = $request->status;
             $archives->save();
-    
+
             return redirect()->back()->with('success', 'Status updated successfully.');
         } catch (\Exception $e) {
             // Log any errors for debugging
@@ -818,7 +818,7 @@ public function tasView()
         try {
             // Find the violation by ID
             $violation = archives::findOrFail($id);
-    
+
             // Validate the incoming request data
             $validatedData = $request->validate([
                 'tas_no' => 'nullable|string|max:255',
@@ -834,12 +834,12 @@ public function tasView()
                 'remarks.*.text' => 'nullable|string',
                 'file_attach_existing.*' => 'nullable|file|max:512000', // Added file validation rules
             ]);
-    
+
             // Attach files
             if ($request->hasFile('file_attach_existing')) {
                 // Retrieve existing file attachments and decode them
                 $existingFilePaths = json_decode($violation->file_attach, true) ?? [];
-    
+
                 $cx = count($existingFilePaths) + 1;
                 foreach ($request->file('file_attach_existing') as $file) {
                     // Check if the file was actually uploaded
@@ -856,7 +856,7 @@ public function tasView()
                 }
                 $violation->file_attach = json_encode($existingFilePaths); // Save the updated array
             }
-    
+
             // Process remarks
             if (isset($validatedData['remarks']) && is_array($validatedData['remarks'])) {
                 $remarksArray = [];
@@ -865,7 +865,7 @@ public function tasView()
                 }
                 $validatedData['remarks'] = json_encode($remarksArray);
             }
-    
+
             // Merge new violations into existing violations array
             if (!empty($validatedData['violation'])) {
                 $existingViolations = json_decode($violation->violation, true) ?? [];
@@ -874,10 +874,10 @@ public function tasView()
                 });
                 $validatedData['violation'] = json_encode(array_unique(array_merge($existingViolations, $newViolations)));
             }
-    
+
             // Update the violation with validated data
             $violation->update($validatedData);
-    
+
             // If new violations were added, add them to the archives model
             if (!empty($newViolations)) {
                 foreach ($newViolations as $newViolation) {
@@ -886,14 +886,14 @@ public function tasView()
                 // Refresh the model after adding new violations
                 $violation = archives::findOrFail($id);
             }
-    
+
             // Return JSON response with updated violation details
             return response()->json(['success' => "Update Successfully"], 200);
-    
+
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error updating Violation: ' . $e->getMessage());
-    
+
             // Set error message and return JSON response
             return response()->json(['error' => 'Error updating Violation: ' . $e->getMessage()], 500);
         }
@@ -903,24 +903,24 @@ public function tasView()
         try {
             $archive = Archives::findOrFail($id);
             $attachmentToRemove = $request->input('attachment');
-    
+
             if ($attachmentToRemove) {
                 $attachments = json_decode($archive->file_attach, true) ?? [];
-    
+
                 // Check if the attachment exists in the array
                 if (($key = array_search($attachmentToRemove, $attachments)) !== false) {
                     unset($attachments[$key]);
                     $archive->file_attach = json_encode(array_values($attachments)); // Reindex array and encode back to JSON
                     $archive->save();
-    
+
                     // Optionally, delete the file from the storage
                     if (Storage::exists($attachmentToRemove)) {
                         Storage::delete($attachmentToRemove);
                     }
-    
+
                     // Update completeness symbols after removing attachment
                     $archive->checkCompleteness();
-    
+
                     return response()->json(['success' => 'Attachment removed successfully.']);
                 } else {
                     return response()->json(['error' => 'Attachment not found in the list.'], 404);
@@ -933,7 +933,7 @@ public function tasView()
             return response()->json(['error' => 'Failed to remove attachment.'], 500);
         }
     }
-    
+
     public function finishCase_archives(Request $request, $id){
         $tasFile = archives::findOrFail($id);
         $tasFile->status = 'closed';
@@ -946,20 +946,20 @@ public function tasView()
     } else {
         return redirect()->back()->with('success', 'Case Closed Successfully');
     }
-} 
+}
     public function delete_edit_violation(Request $request, $id) {
         $archive = Archives::findOrFail($id); // Ensure the model name 'Archives' matches your actual model
         $violationIndex = $request->input('index');
-    
+
         // Retrieve existing violations
         $violations = json_decode($archive->violation, true) ?? [];
-    
+
         if (isset($violations[$violationIndex])) {
             array_splice($violations, $violationIndex, 1);
             $archive->violation = json_encode($violations);
             $archive->save();
         }
-    
+
         return response()->json(['message' => 'Violation deleted successfully', 'violations' => json_decode($archive->violation)]);
     }
     function delete_archives($id){
@@ -976,16 +976,16 @@ public function tasView()
         $archives = archives::findOrFail($id);
         $violationIndex = $request->input('index');
         $newViolation = $request->input('violation');
-    
+
         // Retrieve existing violations
         $violations = json_decode($archives->violation, true) ?? [];
-    
+
         if (isset($violations[$violationIndex])) {
             $violations[$violationIndex] = $newViolation;
             $archives->violation = json_encode($violations);
             $archives->save();
         }
-    
+
         return response()->json(['message' => 'Violation updated successfully', 'violations' => json_decode($archives->violation)]);
     }
     public function deleteRemark_archives(Request $request){
@@ -1020,12 +1020,12 @@ public function tasView()
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-///////////////////////////////////////////////////=============================================================================================================================    
-///////////////////////////////////////////////////=============================================================================================================================    
-///////////////////////////////////////////////////=============================================================================================================================    
-///////////////////////////////////////////////////=============================================================================================================================    
-///////////////////////////////////////////////////=============================================================================================================================    
-    
+///////////////////////////////////////////////////=============================================================================================================================
+///////////////////////////////////////////////////=============================================================================================================================
+///////////////////////////////////////////////////=============================================================================================================================
+///////////////////////////////////////////////////=============================================================================================================================
+///////////////////////////////////////////////////=============================================================================================================================
+
     public function admittedsubmit(Request $request) {
          // dd($request->all());
          try {
@@ -1093,11 +1093,11 @@ public function tasView()
         if (!$user) {
             return redirect()->route('dashboard')->with('error', 'User not found.');
         }
-        return view('profile', ['user' => $user]);
+        return view('user/profile', ['user' => $user]);
     }
     public function edit($id){
         $user = User::findOrFail($id);
-        return view('edit_profile', compact('user'));
+        return view('user/edit_profile', compact('user'));
     }
     public function update(Request $request, $id){
         try {
@@ -1128,25 +1128,25 @@ public function tasView()
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
-    } 
+    }
     public function updatePicture(Request $request, $id){
         try {
             $request->validate([
                 'profile_picture' => 'image|mimes:jpeg,png,jpg,gif|max:6144' // Adjust the validation rules as needed
             ]);
-    
+
             $user = User::findOrFail($id);
-    
+
             if ($request->hasFile('profile_picture')) {
                 $image = $request->file('profile_picture');
                 $imageName = $user->username .'-dp.'.$image->getClientOriginalExtension();
                 $image->move(public_path('uploads'), $imageName);
-    
+
                 // Update the user's profile picture file path in the database
                 $user->profile_pic = 'uploads/' . $imageName; // Store the file path, not the file content
                 $user->save();
             }
-    
+
             return redirect()->back()->with('success', 'Profile picture uploaded successfully.');
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'An error occurred while uploading the profile picture.');
@@ -1154,19 +1154,19 @@ public function tasView()
     }
     public function change($id){
         $user = User::findOrFail($id);
-        return view('change_password', compact('user'));
+        return view('user/change_password', compact('user'));
     }
     public function updatePassword(Request $request){
         try {
             $user = Auth::user();
-            
+
             if (!password_verify($request->current_password, Crypt::decryptString($user->password))) {
                 return back()->with('error', 'Current password does not match.');
             }
-    
+
             $user->password = Crypt::encryptString($request->new_password);
             $user->save();
-    
+
             return back()->with('success', 'Password updated successfully.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -1197,12 +1197,12 @@ public function tasView()
                 'email' => 'required|string|email|max:255|unique:users',
                 'password' => 'required|string|min:8',
             ]);
-            
+
             // Begin a database transaction
             DB::beginTransaction();
-            
+
             $encryptedPassword = Crypt::encryptString($request->input('password'));
-            
+
             $user = new User([
                 'fullname' => $request->input('fullname'),
                 'username' => $request->input('username'),
@@ -1211,18 +1211,18 @@ public function tasView()
                 'email_verified_at' => now(),
                 'password' => $encryptedPassword, // Store the encrypted password
             ]);
-            
+
             $user->save();
-            
+
             DB::commit();
-            
+
             return response()->json(['message' => 'User created successfully'], 201);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error creating user: '. $e->getMessage());
             return response()->json(['message' => 'Error creating user'], 422);
         }
-        
+
     }
     public function violationadd(){
         return view('ao.addvio');
@@ -1230,10 +1230,10 @@ public function tasView()
     public function officergg(){
         $departments = department::all();
         return view('ao.addoffi', compact('departments'));
-    }    
+    }
     public function department(){
         return view('ao.adddep');
-    }    
+    }
 
 
 public function departmentsave(Request $request) {
@@ -1242,14 +1242,14 @@ public function departmentsave(Request $request) {
         $request->validate([
             'department' => 'required|string',
         ]);
-        
+
         // Check if the department already exists
         $existingDepartment = Department::where('department', $request->input('department'))->first();
-        
+
         if ($existingDepartment) {
             return redirect()->back()->with('error', 'Department already exists');
         }
-        
+
         // Generate a random string
         $randomString = Str::random(10);
 
@@ -1373,17 +1373,17 @@ public function editdepp(){
             'plate_no' => 'nullable|string|max:255',
             'contact_no' => 'nullable|string|max:255',
             'remarks.*.text' => 'nullable|string',
-            'file_attach_existing.*' => 'nullable|file', 
-            'fine_fee' => 'nullable|numeric', 
-            'typeofvehicle' => 'nullable|string|max:255',  
-            'status' => 'nullable|string|in:in-progress,closed,settled ', 
+            'file_attach_existing.*' => 'nullable|file',
+            'fine_fee' => 'nullable|numeric',
+            'typeofvehicle' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:in-progress,closed,settled ',
         ]);
 
         // Attach files
         if ($request->hasFile('file_attach_existing')) {
             // Retrieve existing file attachments and decode them
             $existingFilePaths = json_decode($violation->file_attach, true) ?? [];
-            
+
             $cx = count($existingFilePaths) + 1;
             foreach ($request->file('file_attach_existing') as $file) {
                 // Check if the file was actually uploaded
@@ -1471,24 +1471,24 @@ public function editdepp(){
     }
 }
 
-    
-    
+
+
     public function uploadFileAdmit(Request $request, $id)
     {
         // Validate the request data for file upload
         $request->validate([
             'file_attach.*' => 'required|file|  mimes:pdf,doc,docx', // Allow multiple files
         ]);
-    
+
         try {
             // Find the Admitted record
             $admitted = Admitted::findOrFail($id);
-    
+
             // Handle file upload
             if ($request->hasFile('file_attach')) {
                 $existingFilePaths = json_decode($admitted->file_attach, true) ?? [];
                 $cx = count($existingFilePaths) + 1;
-    
+
                 foreach ($request->file('file_attach') as $file) {
                     if ($file->isValid()) {
                         $x = "CS-" . $admitted->case_no . "_documents_" . $cx . "_";
@@ -1501,11 +1501,11 @@ public function editdepp(){
                         return response()->json(['error' => 'Failed to upload files.'], 400);
                     }
                 }
-    
+
                 // Update the Admitted record with the updated file attachments array
                 $admitted->file_attach = json_encode($existingFilePaths);
             }
-    
+
             // Save the Admitted record
             $admitted->save();
             return redirect()->back()->with('success', 'Status updated successfully.');
@@ -1515,45 +1515,56 @@ public function editdepp(){
             return redirect()->back()->with('error', 'Failed to update status: ' . $e->getMessage());
         }
     }
-    
+
+
 
     public function uploadFileTas(Request $request, $id)
-{
-    // Validate the request data for file upload
-    $request->validate([
-        'file_attach' => 'required|file|mimes:pdf,doc,docx|max:2048', // Example validation rules
-    ]);
+    {
+        // Validate the request data for file upload
+        $request->validate([
+            'file_attach' => 'required|file|mimes:pdf,doc,docx|max:2048', // Example validation rules
+        ]);
 
-    try {
-        // Find the TasFile record
-        $tasFile = TasFile::findOrFail($id);
+        try {
+            // Find the TasFile record
+            $tasFile = TasFile::findOrFail($id);
 
-        // Handle file upload
-        if ($request->hasFile('file_attach')) {
-            $file = $request->file('file_attach');
-            $fileName = 'CS-' . $tasFile->case_no . '_document_' . time() . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('attachments', $fileName, 'public');
+            // Handle file upload
+            if ($request->hasFile('file_attach')) {
+                $file = $request->file('file_attach');
+                $fileName = 'CS-' . $tasFile->case_no . '_document_' . time() . '.' . $file->getClientOriginalExtension();
+                $file->storeAs('attachments', $fileName, 'public');
 
-            // Retrieve existing file attachments and decode them
-            $existingFilePaths = json_decode($tasFile->file_attach, true) ?? [];
-            // Append the new file path to the array
-            $existingFilePaths[] = 'attachments/' . $fileName;
+                // Retrieve existing file attachments and decode them
+                $existingFilePaths = json_decode($tasFile->file_attach, true) ?? [];
+                // Append the new file path to the array
+                $existingFilePaths[] = 'attachments/' . $fileName;
 
-            // Update the TasFile record with the updated file attachments array
-            $tasFile->file_attach = json_encode($existingFilePaths);
-        }
+                // Update the TasFile record with the updated file attachments array
+                $tasFile->file_attach = json_encode($existingFilePaths);
+            }
 
-        // Save the TasFile record
-        $tasFile->save();
+            // Save the TasFile record
+            $tasFile->save();
 
-        // Return JSON response indicating success
-        return redirect()->back()->with('success', 'Status updated successfully.');
+            // Return JSON response indicating success
+            return response()->json([
+                'status' => 'success',
+                'message' => 'File uploaded successfully.',
+                'file_attach' => $tasFile->file_attach // Optionally, return the updated file attachments
+            ]);
         } catch (\Exception $e) {
             // Log any errors for debugging
             \Log::error('Error updating status: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Failed to update status: ' . $e->getMessage());
+
+            // Return JSON response indicating failure
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to upload file: ' . $e->getMessage()
+            ], 500); // You can adjust the status code if needed
         }
     }
+
 
     public function updateStatus(Request $request, $id){
         try {
@@ -1581,7 +1592,7 @@ public function editdepp(){
         $tasFile->status = 'settled';
         $tasFile->fine_fee = $request->fine_fee;
         $tasFile->save();
-    
+
         // Determine response type based on request headers
         if ($request->expectsJson()) {
             return response()->json(['success' => 'Case Closed Successfully'], 200);
@@ -1686,28 +1697,28 @@ public function editdepp(){
         try {
             // Fetch all traffic violations
             $violation = TrafficViolation::all();
-            
+
             // Fetch recent TasFiles ordered by case number descending
             $recentViolationsToday = TasFile::all()->sortByDesc('case_no');
-            
+
             // Prepare a collection for officers
             $officers = collect();
-            
+
             foreach ($recentViolationsToday as $tasFile) {
                 // Update completeness symbols for each TasFile
                 $tasFile->checkCompleteness();
-                
-             
+
+
                 $officerName = $tasFile->apprehending_officer;
                 $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
                 $officers = $officers->merge($officersForFile);
                 $tasFile->relatedofficer = $officersForFile;
             }
-    
+
             // Debugging: Dump the officers collection to check the data
             // dd($officers);
             // dd($recentViolationsToday[100]);
-    
+
             // Pass data to the view, including the new variable $violation
             return view('tas.edit', compact('recentViolationsToday', 'violation', 'officers'));
         } catch (\Exception $e) {
@@ -1715,22 +1726,22 @@ public function editdepp(){
             throw new \Exception('Error updating contest: ' . $e->getMessage());
         }
     }
-    
+
     public function updateAdmitted(){
         // Fetch all traffic violations
-        
-        
+
+
         // Fetch recent TasFiles ordered by case number descending
         $recentViolationsToday = Admitted::all()->sortByDesc('admittedno');
           // Update completeness symbols for each TasFile
-       
+
         // Fetch all codes (assuming TrafficViolation model provides codes)
         $codes = TrafficViolation::all();
-        
+
         // Prepare a collection for officers
         $officers = collect();
-       
-        
+
+
         // Iterate through each TrafficViolation record
         foreach ($recentViolationsToday as $tasFile) {
             $tasFile->checkCompleteness();
@@ -1740,9 +1751,9 @@ public function editdepp(){
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
             $officers = $officers->merge($officersForFile);
             $tasFile->relatedofficer = $officersForFile;
-            
+
         }
-  
+
         // Pass data to the view, including the new variable $violationData
         return view('admitted.edit', compact('recentViolationsToday', 'codes', 'officers' ));
     }
@@ -1851,7 +1862,7 @@ public function editdepp(){
             if ($violations) {
                 $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
             }
-            
+
             $remarks = json_decode($tasFile->remarks);
             // Check if $remarks is an array
             if (is_array($remarks)) {
@@ -1873,25 +1884,25 @@ public function editdepp(){
         try {
             // Find the TasFile by its ID or throw a ModelNotFoundException
             $recentViolationsToday = TasFile::findOrFail($id);
-    
+
             // Retrieve all Traffic Violations ordered by code ascending
             $violationz = TrafficViolation::orderBy('code', 'asc')->get();
-    
+
             // Prepare a collection for officers
             $officers = collect();
-    
+
             // Get the apprehending officer name from the TasFile
             $officerName = $recentViolationsToday->apprehending_officer;
-    
+
             // Query the ApprehendingOfficer model for officers with the given name
             $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
-    
+
             // Merge the officers into the collection
             $officers = $officers->merge($officersForFile);
-    
+
             // Decode remarks if they are JSON-encoded
             $remarks = json_decode($recentViolationsToday->remarks, true);
-            
+
             // Check if $remarks is an array and reverse it if so
             if (is_array($remarks)) {
                 $remarks = array_reverse($remarks);
@@ -1899,20 +1910,20 @@ public function editdepp(){
                 // If $remarks is not an array or JSON decoding failed, set it to an empty array
                 $remarks = [];
             }
-    
+
             // Pass data to the view, including authenticated user information
             $user = Auth::user(); // Assuming you are using Laravel's built-in authentication
             $fullname = $user->fullname; // Adjust this based on your User model's field
-    
+
             return view('tas.detailsedit', compact('recentViolationsToday', 'officers', 'violationz', 'remarks', 'fullname', 'user'));
-    
+
         } catch (ModelNotFoundException $e) {
             // Handle the case where the TasFile with the specified ID is not found
             return response()->view('errors.404', [], 404);
         }
     }
-    
-    
+
+
     public function detailsadmitted(Request $request, $id){
         try {
             // Find the TasFile by its ID or throw a ModelNotFoundException
@@ -1927,7 +1938,7 @@ public function editdepp(){
             if ($violations) {
                 $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
             }
-            
+
             $remarks = json_decode($admitted->remarks);
             // Check if $remarks is an array
             if (is_array($remarks)) {
@@ -1959,7 +1970,7 @@ public function editdepp(){
             if ($violations) {
                 $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
             }
-            
+
             $remarks = json_decode($tasFile->remarks);
             // Check if $remarks is an array
             if (is_array($remarks)) {
@@ -1981,26 +1992,26 @@ public function editdepp(){
         try {
             // Find the TasFile by its ID or throw a ModelNotFoundException
             $tasFile = TasFile::findOrFail($id);
-    
+
             // Retrieve related ApprehendingOfficers
             $relatedOfficers = ApprehendingOfficer::where('officer', $tasFile->apprehending_officer)->get();
-    
+
             // Retrieve related TrafficViolations
             $violations = json_decode($tasFile->violation, true);
             $relatedViolations = [];
             if ($violations) {
                 $relatedViolations = TrafficViolation::whereIn('code', $violations)->get();
             }
-            
+
             // Check if $tasFile->remarks is already an array
             $remarks = is_array($tasFile->remarks) ? $tasFile->remarks : [];
-    
+
             // Reverse the array if it's an array
             $remarks = array_reverse($remarks);
-    
+
             // Return the view with TasFile and related data
             return view('tas.detailsview', compact('tasFile', 'relatedOfficers', 'relatedViolations', 'remarks'));
-    
+
         } catch (ModelNotFoundException $e) {
             // Handle case where TasFile with $id is not found
             return response()->view('errors.404', [], 404);
@@ -2011,22 +2022,22 @@ public function editdepp(){
         try {
             $tasFile = TasFile::findOrFail($id);
             $attachmentToRemove = $request->input('attachment');
-    
+
             if ($attachmentToRemove) {
                 $attachments = json_decode($tasFile->file_attach, true) ?? [];
-    
+
                 // Check if the attachment exists in the array
                 if (($key = array_search($attachmentToRemove, $attachments)) !== false) {
                     unset($attachments[$key]);
                     $tasFile->file_attach = json_encode(array_values($attachments)); // Reindex array and encode back to JSON
                     $tasFile->save();
-    
+
                     // Optionally, delete the file from the storage
                     Storage::delete($attachmentToRemove);
-    
+
                     // Update completeness symbols after removing attachment
                     $tasFile->checkCompleteness();
-    
+
                     return response()->json(['success' => 'Attachment removed successfully.']);
                 } else {
                     return response()->json(['error' => 'Attachment not found in the list.'], 404);
@@ -2039,7 +2050,7 @@ public function editdepp(){
             return response()->json(['error' => 'Failed to remove attachment.'], 500);
         }
     }
-    
+
     public function UPDATEVIO(Request $request, $id){
         $tasFile = TasFile::findOrFail($id);
         $violationIndex = $request->input('index');
@@ -2060,34 +2071,34 @@ public function editdepp(){
         try {
             $tasFile = TasFile::findOrFail($id);
             $violationIndex = $request->input('index');
-    
+
             // Retrieve existing violations
             $violations = json_decode($tasFile->violation, true) ?? [];
-    
+
             if (isset($violations[$violationIndex])) {
                 array_splice($violations, $violationIndex, 1);
                 $tasFile->violation = json_encode($violations);
                 $tasFile->save();
-                
+
                 // Log the deletion of the violation
                 \Log::info("Violation at index $violationIndex deleted successfully for TasFile ID: $id.");
-    
-              
-    
+
+
+
                 // Log the update of the completeness status
                 \Log::info("TasFile ID: $id completeness checked and symbols updated.");
             } else {
                 \Log::warning("Violation index $violationIndex not found for TasFile ID: $id.");
                 return response()->json(['message' => 'Violation index not found'], 404);
             }
-    
+
             return response()->json(['message' => 'Violation deleted successfully', 'violations' => json_decode($tasFile->violation)]);
         } catch (\Exception $e) {
             \Log::error('Error deleting violation: ' . $e->getMessage());
             return response()->json(['message' => 'Error deleting violation', 'error' => $e->getMessage()], 500);
         }
     }
-    
+
     public function deleteRemark(Request $request)
     {
         // Retrieve data from AJAX request
@@ -2128,7 +2139,7 @@ public function editdepp(){
     //====================================================================================================================================================================
     //====================================================================================================================================================================
     //====================================================================================================================================================================
-    
+
 
     function delete_admitted($id){
            try {
@@ -2144,25 +2155,25 @@ public function editdepp(){
            try {
                // Find the admitted by its ID or throw a ModelNotFoundException
                $recentViolationsToday = admitted::findOrFail($id);
-       
+
                // Retrieve all Traffic Violations ordered by code ascending
                $violationz = TrafficViolation::orderBy('code', 'asc')->get();
-       
+
                // Prepare a collection for officers
                $officers = collect();
-       
+
                // Get the apprehending officer name from the admitted
                $officerName = $recentViolationsToday->apprehending_officer;
-       
+
                // Query the ApprehendingOfficer model for officers with the given name
                $officersForFile = ApprehendingOfficer::where('officer', $officerName)->get();
-       
+
                // Merge the officers into the collection
                $officers = $officers->merge($officersForFile);
-       
+
                // Decode remarks if they are JSON-encoded
                $remarks = json_decode($recentViolationsToday->remarks, true);
-               
+
                // Check if $remarks is an array and reverse it if so
                if (is_array($remarks)) {
                    $remarks = array_reverse($remarks);
@@ -2170,10 +2181,10 @@ public function editdepp(){
                    // If $remarks is not an array or JSON decoding failed, set it to an empty array
                    $remarks = [];
                }
-       
+
                // Pass data to the view
                return view('admitted.detailsedit', compact('recentViolationsToday', 'officers', 'violationz', 'remarks'));
-       
+
            } catch (ModelNotFoundException $e) {
                // Handle the case where the admitted with the specified ID is not found
                return response()->view('errors.404', [], 404);
@@ -2182,16 +2193,16 @@ public function editdepp(){
        public function delete_edit_violation_admitted(Request $request, $id) {
            $archive = admitted::findOrFail($id); // Ensure the model name 'admitted' matches your actual model
            $violationIndex = $request->input('index');
-       
+
            // Retrieve existing violations
            $violations = json_decode($archive->violation, true) ?? [];
-       
+
            if (isset($violations[$violationIndex])) {
                array_splice($violations, $violationIndex, 1);
                $archive->violation = json_encode($violations);
                $archive->save();
            }
-       
+
            return response()->json(['message' => 'Violation deleted successfully', 'violations' => json_decode($archive->violation)]);
        }
        public function removeAttachmentadmitted(Request $request, $id)
@@ -2199,24 +2210,24 @@ public function editdepp(){
            try {
                $archive = admitted::findOrFail($id);
                $attachmentToRemove = $request->input('attachment');
-       
+
                if ($attachmentToRemove) {
                    $attachments = json_decode($archive->file_attach, true) ?? [];
-       
+
                    // Check if the attachment exists in the array
                    if (($key = array_search($attachmentToRemove, $attachments)) !== false) {
                        unset($attachments[$key]);
                        $archive->file_attach = json_encode(array_values($attachments)); // Reindex array and encode back to JSON
                        $archive->save();
-       
+
                        // Optionally, delete the file from the storage
                        if (Storage::exists($attachmentToRemove)) {
                            Storage::delete($attachmentToRemove);
                        }
-       
+
                        // Update completeness symbols after removing attachment
                        $archive->checkCompleteness();
-       
+
                        return response()->json(['success' => 'Attachment removed successfully.']);
                    } else {
                        return response()->json(['error' => 'Attachment not found in the list.'], 404);
@@ -2229,28 +2240,28 @@ public function editdepp(){
                return response()->json(['error' => 'Failed to remove attachment.'], 500);
            }
        }
-       
+
        public function deleteRemark_admitted(Request $request){
            // Retrieve data from AJAX request
            $violationId = $request->input('violation_id');
            $index = $request->input('index');
-   
+
            // Find the admitted by violation ID (assuming admitted is your model)
            try {
                $admitted = admitted::findOrFail($violationId);
-   
+
                // Decode remarks from JSON to array
                $remarks = json_decode($admitted->remarks, true);
-   
+
                // Check if remarks exist and if the index is valid
                if (is_array($remarks) && array_key_exists($index, $remarks)) {
                    // Remove the remark at the specified index
                    unset($remarks[$index]);
-   
+
                    // Encode the updated remarks array back to JSON and update the admitted
                    $admitted->remarks = json_encode(array_values($remarks)); // Re-index array
                    $admitted->save();
-   
+
                    // Return a success response
                    return response()->json(['success' => 'Remark deleted successfully']);
                } else {
@@ -2267,10 +2278,10 @@ public function editdepp(){
            try {
                // Find the violation by ID
                $violation = admitted::findOrFail($id);
-       
+
                // Capture original data before updating
                $originalData = $violation->getOriginal();
-       
+
                // Validate the incoming request data
                $validatedData = $request->validate([
                    'admittedno' => 'nullable|string|max:255',
@@ -2284,17 +2295,17 @@ public function editdepp(){
                    'status' => 'nullable|string|max:255',
                    'contact_no' => 'nullable|string|max:255',
                    'remarks.*.text' => 'nullable|string',
-                   'file_attach_existing.*' => 'nullable|file',  
-                   'fine_fee' => 'nullable|numeric', 
-                   'typeofvehicle' => 'nullable|string|max:255',  
-                   'status' => 'nullable|string|in:in-progress,closed,settled ', 
+                   'file_attach_existing.*' => 'nullable|file',
+                   'fine_fee' => 'nullable|numeric',
+                   'typeofvehicle' => 'nullable|string|max:255',
+                   'status' => 'nullable|string|in:in-progress,closed,settled ',
                ]);
-       
+
                // Attach files
                if ($request->hasFile('file_attach_existing')) {
                    // Retrieve existing file attachments and decode them
                    $existingFilePaths = json_decode($violation->file_attach, true) ?? [];
-       
+
                    $cx = count($existingFilePaths) + 1;
                    foreach ($request->file('file_attach_existing') as $file) {
                        // Check if the file was actually uploaded
@@ -2311,7 +2322,7 @@ public function editdepp(){
                    }
                    $violation->file_attach = json_encode($existingFilePaths); // Save the updated array
                }
-       
+
                // Process remarks
                if (isset($validatedData['remarks']) && is_array($validatedData['remarks'])) {
                    $remarksArray = [];
@@ -2320,7 +2331,7 @@ public function editdepp(){
                    }
                    $validatedData['remarks'] = json_encode($remarksArray);
                }
-       
+
                // Merge new violations into existing violations array
                if (!empty($validatedData['violation'])) {
                    $existingViolations = json_decode($violation->violation, true) ?? [];
@@ -2329,10 +2340,10 @@ public function editdepp(){
                    });
                    $validatedData['violation'] = json_encode(array_unique(array_merge($existingViolations, $newViolations)));
                }
-       
+
                // Update the violation with validated data
                $violation->update($validatedData);
-       
+
                // If new violations were added, add them to the admitted model
                if (!empty($newViolations)) {
                    foreach ($newViolations as $newViolation) {
@@ -2341,7 +2352,7 @@ public function editdepp(){
                    // Refresh the model after adding new violations
                    $violation = admitted::findOrFail($id);
                }
-       
+
                // Log history if there are changes
                $changes = [];
                foreach ($validatedData as $key => $value) {
@@ -2352,39 +2363,39 @@ public function editdepp(){
                        ];
                    }
                }
-       
+
                if (!empty($changes)) {
                    $violation->logHistory('updated', $changes);
                }
-       
+
                // Return JSON response with updated violation details
                return response()->json(['success' => "Update Successfully"], 200);
-       
+
            } catch (\Exception $e) {
                // Log the error
                Log::error('Error updating Violation: ' . $e->getMessage());
-       
+
                // Set error message and return JSON response
                return response()->json(['error' => 'Error updating Violation: ' . $e->getMessage()], 500);
            }
        }
-       
-       
-      
-       
+
+
+
+
     public function updateStatusadmitted(Request $request, $id){
         try {
             // Log the request data for debugging
             \Log::info('Request data: ', $request->all());
-    
+
             $archives = admitted::findOrFail($id);
-    
+
             // Log the received status for debugging
             \Log::info('Received status: ' . $request->status);
-    
+
             $archives->status = $request->status;
             $archives->save();
-    
+
             return redirect()->back()->with('success', 'Status updated successfully.');
         } catch (\Exception $e) {
             // Log any errors for debugging
@@ -2435,7 +2446,7 @@ public function editdepp(){
         $labels = $violationsData->pluck('violation')->toArray();
         $data = $violationsData->pluck('count')->toArray();
 
-    
+
 
         $yearsWithData = TasFile::distinct()
         ->selectRaw('YEAR(date_received) as year')
@@ -2523,17 +2534,17 @@ public function editdepp(){
             $request->validate([
                 'month' => 'required|date_format:Y-m',
             ]);
-    
+
             // Extract the year and month from the 'month' input
             $monthInput = $request->input('month');
             $year = intval(substr($monthInput, 0, 4));
             $month = intval(substr($monthInput, 5, 2));
-    
+
             // Fetch all records for the specified month and year
             $data = TasFile::whereMonth('date_received', $month)
                            ->whereYear('date_received', $year)
                            ->get();
-    
+
             // Count occurrences by date_received
             $dateCounts = $data->groupBy(function ($item) {
                 return $item->date_received instanceof \Carbon\Carbon
@@ -2542,24 +2553,24 @@ public function editdepp(){
             })->map(function ($group) {
                 return $group->count();
             });
-    
+
             $formattedData = $dateCounts->map(function ($count, $date) {
                 return [
                     'date' => $date,
                     'count' => $count,
                 ];
             })->values();
-    
+
             return response()->json($formattedData);
         } catch (\Exception $e) {
             // Log the exception for debugging
             \Log::error('Error fetching date received data: ' . $e->getMessage());
-    
+
             return response()->json(['error' => 'An error occurred while fetching data'], 500);
         }
     }
-    
- 
+
+
     public function fetchViolations(Request $request)
     {
         $month1 = $request->query('month_1');
@@ -2570,12 +2581,12 @@ public function editdepp(){
         $year3 = $request->query('year_3');
         $month4 = $request->query('month_4');
         $year4 = $request->query('year_4');
-    
+
         // Validate inputs
         if (!$month1 || !$year1 || !$month2 || !$year2 || !$month3 || !$year3 || !$month4 || !$year4) {
             return response()->json(['error' => 'Invalid months or years selected'], 400);
         }
-    
+
         // Fetch violations for the selected months and years
         $violationsMonth1 = TasFile::whereMonth('date_received', $month1)
             ->whereYear('date_received', $year1)
@@ -2589,7 +2600,7 @@ public function editdepp(){
         $violationsMonth4 = TasFile::whereMonth('date_received', $month4)
             ->whereYear('date_received', $year4)
             ->count();
-    
+
         // Prepare data for ApexCharts
         $data = [
             'series' => [$violationsMonth1, $violationsMonth2, $violationsMonth3, $violationsMonth4],
@@ -2600,12 +2611,12 @@ public function editdepp(){
                 date('F Y', mktime(0, 0, 0, $month4, 10, $year4))
             ],
         ];
-    
+
         // Return data as JSON
         return response()->json($data);
     }
 
- 
+
     public function getViolationRankings(Request $request)
     {
         // Validate page number from request or default to 1
@@ -2740,8 +2751,8 @@ public function editdepp(){
     }
 
 ////////////////////////////////////////////////////////////////////////COMMUNICATION//////////////////////////////////////////////////////////////////////
-//                                                                                                                                                       // 
-  //                                                                                                                                                   //  
+//                                                                                                                                                       //
+  //                                                                                                                                                   //
 //                                                                                                                                                       //
 ////////////////////////////////////////////////////////////////////////COMMUNICATION//////////////////////////////////////////////////////////////////////
 
@@ -2755,7 +2766,7 @@ public function editdepp(){
         $userId = $userId ?? Auth::id(); // Get the current user's ID if $userId is not provided
 
 
-        
+
         // Fetch the list of users for the sidebar
         $users = User::where('id', '!=', $userId)->get();
 
@@ -2794,7 +2805,7 @@ public function editdepp(){
         try {
             // Set a timeout for long polling (adjust as needed)
             $timeout = 30; // Timeout in seconds
-    
+
             $startTime = time();
             while (true) {
                 // Check if the time limit for long polling has been reached
@@ -2802,35 +2813,35 @@ public function editdepp(){
                     // If the timeout is reached, return an empty response to indicate no new messages
                     return response()->json(['messages' => []]);
                 }
-    
+
                 // Fetch messages between the current user and the selected user, ordered by created_at in descending order
                 $messages = G5ChatMessage::where(function($query) use ($userId) {
                     $query->where('user_id', Auth::id())->where('receiver_id', $userId);
                 })->orWhere(function($query) use ($userId) {
                     $query->where('user_id', $userId)->where('receiver_id', Auth::id());
                 })->orderBy('created_at', 'desc')->with('user', 'receiver')->limit(10)->get();
-                
+
                 // Transform messages and format date
                 $messages->transform(function ($message) {
                     $message->created_at_formatted = Carbon::parse($message->created_at)->format('M d, Y H:i A');
                     return $message;
                 });
-    
+
                 // Get current user details
                 $user = Auth::user();
-    
+
                 if ($messages->isNotEmpty()) {
                     // If messages are available, return them along with the current user details
                     return response()->json(['messages' => $messages, 'user' => $user]);
                 }
-    
+
                 // Sleep for a short interval before checking again
                 usleep(500000); // Sleep for 0.5 seconds (adjust as needed)
             }
         } catch (\Exception $e) {
             // Log the error
             Log::error('Error fetching chat messages: ' . $e->getMessage());
-            
+
             // Return an error response
             return response()->json(['error' => 'Failed to fetch chat messages.'], 500);
         }
@@ -2840,8 +2851,8 @@ public function editdepp(){
     /////////////////////////////////////                HISTORY             ///////////////////////////////////////////
     ///////////////////////////////////////////                        ///////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-    
-    
+
+
 
 
 }

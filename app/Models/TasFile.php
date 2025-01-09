@@ -23,26 +23,26 @@ class TasFile extends Model
         'violation',
         'transaction_no',
         'date_received',
-        'contact_no', 
+        'contact_no',
         'plate_no',
         'remarks',
         'file_attach',
         'typeofvehicle',
         'fine_fee',
         'history',
-        'status', 
-    
-        'symbols', 
+        'status',
+
+        'symbols',
     ];
 
     protected $casts = [
-        'history' => 'json',  
+        'history' => 'json',
     ];
 
     public function logHistory($action, $changes)
     {
         $history = $this->history ?? [];
-    
+
          // Retrieve current user's information
     $user = Auth::user();
         $history[] = [
@@ -53,10 +53,10 @@ class TasFile extends Model
             'timestamp' => now()->toDateTimeString(),
             'changes' => $changes
         ];
-    
+
         $this->update(['history' => $history]); // Update 'history' attribute
     }
-    
+
 
     public function setofficerAttribute($value)
     {
@@ -100,7 +100,7 @@ public function relatedViolations()
         if (is_string($value)) {
             return $value;
         }
-        
+
         // If it's an array, convert it to a string
         return $value ? implode(',', $value) : '';
     }
@@ -118,7 +118,7 @@ public function relatedViolations()
     {
         $this->attributes['driver'] = strtoupper($value);
     }
-    
+
     // Define mutator for 'plate_no' field
     public function setPlateNoAttribute($value)
     {
@@ -128,7 +128,7 @@ public function relatedViolations()
     {
         return $value ? json_decode($value, true) : [];
     }
- 
+
 // public function setRemarksAttribute($value)
 // {
 //     if (is_array($value)) {
@@ -147,48 +147,57 @@ public function relatedViolations()
 //     return $value ? explode(',', $value) : [];
 // }
 public function checkCompleteness()
-{
-    try {
-        // Check if file_attach exists and is not empty
-        if (!isset($this->file_attach) || empty(json_decode($this->file_attach))) {
-            $this->symbols = 'incomplete';
-        } else {
-            $this->symbols = 'complete';
-        }
-        
-        // Save the model
-        $this->save();
+    {
+        try {
+            // Check if file_attach exists and is not empty
+            if (!isset($this->file_attach) || empty(json_decode($this->file_attach))) {
+                $this->symbols = 'incomplete';
+            } else {
+                $this->symbols = 'complete';
+            }
 
-        \Log::info('Symbols attribute updated successfully.');
-    } catch (\Exception $e) {
-        \Log::error('Error updating symbols attribute: ' . $e->getMessage());
-        throw new \Exception('Error updating symbols attribute: ' . $e->getMessage());
+            // Save the model
+            $this->save();
+
+            \Log::info('Symbols attribute updated successfully.');
+        } catch (\Exception $e) {
+            \Log::error('Error updating symbols attribute: ' . $e->getMessage());
+            throw new \Exception('Error updating symbols attribute: ' . $e->getMessage());
+        }
     }
-}
 
 public function user()
 {
     return $this->belongsTo(User::class);
 }
 
- 
- 
-      public function addViolation($newViolation)
-    {
-        // Retrieve existing violations
-        $violations = json_decode($this->violation, true) ?? [];
-        // Check if the new violation already exists
-        if (!in_array($newViolation, $violations)) {
-            // Add the new violation if it doesn't already exist
-            $violations[] = $newViolation;
-            // Update the violation attribute
-            $this->violation = json_encode($violations);
-            // Save the model
-            $this->save();
-        }
-    }
-   
 
- 
+
+public function addViolation($newViolation)
+{
+    // Retrieve existing violations
+    $violations = json_decode($this->violation, true) ?? [];
+    // Check if the new violation already exists
+    if (!in_array($newViolation, $violations)) {
+        // Add the new violation if it doesn't already exist
+        $violations[] = $newViolation;
+        // Update the violation attribute
+        $this->violation = json_encode($violations);
+        // Save the model
+        $this->save();
+    }
+}
+
+public function handleDeletion()
+{
+    // Example logic for deletion handling
+    // This could be marking the file as deleted, updating a status, etc.
+    if ($this->is_deleted) {
+        // Example of deleting a related record or handling deletion status
+        // You can adjust this logic to fit your needs
+        $this->delete(); // Or perform any other logic you want here
+    }
+}
+
 }
 

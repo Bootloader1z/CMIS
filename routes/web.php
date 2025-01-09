@@ -39,7 +39,7 @@ Route::get('/', function () {
 })->name('landpage');
 
 Route::get('/loginpage', [AuthController::class, 'loadlogin'])->name('login');
-Route::post('/loginpost', [AuthController::class, 'login'])->name('login.submit'); 
+Route::post('/loginpost', [AuthController::class, 'login'])->name('login.submit');
 Route::get('/logout', [AuthController::class, 'logoutx'])->name('logout');
 
 // Middleware routes for authenticated users
@@ -49,18 +49,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/officers', [DashboardController::class, 'filterOfficer'])->name('officers.index');
     Route::post('/get-violations', [DashboardController::class, 'getViolations'])->name('get.today');
 
-    // =============== ANALYTICS 
+    // =============== ANALYTICS
 
 
-Route::get('/data/recent', [UserController::class, 'getRecentData'])->name('data.recent');
-Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.filter');
+    Route::get('/data/recent', [UserController::class, 'getRecentData'])->name('data.recent');
+    Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.filter');
 
     Route::get('/analytics', [DashboardController::class, 'analyticsDash'])->name('analytics.index');
     Route::get('/getChartData', [DashboardController::class, 'getChartData']);
-   
-    
+
+
     Route::get('/officers/{departmentName}', [DashboardController::class, 'getByDepartmentName']);
- 
+
     Route::get('/documents/print/{id}', [DashboardController::class, 'printsub'])->name('print.sub');
     Route::get('/contested.cases/reports', [DashboardController::class, 'reportsview'])->name('filterByMonth');
 
@@ -79,7 +79,7 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
     Route::post('users/{id}/profile/update_password', [DashboardController::class, 'updatePassword'])->name('profile.update_password');
     Route::post('users/{id}/profile/profile.picture.save', [DashboardController::class, 'updatePicture'])->name('profile.picture.upload');
 
-    
+
   // =============       USER-MANAGEMENT
 
   Route::get('/manage-user', [DashboardController::class, 'management'])->name('user_management');
@@ -116,10 +116,10 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
         return view('ao.detailsoffi', compact('officer'));
     })->name('fetchingofficer');
 
-    //                  AO/VIOLATION    =============  
-    
+    //                  AO/VIOLATION    =============
+
     // archives  =====
-    
+
     Route::get('/archives/add', [DashboardController::class, 'archivesmanage'])->name('archivesmanage');
     Route::post('/archives/save', [DashboardController::class, 'archivessubmit'])->name('archivessubmit');
     Route::get('/archives/view', [DashboardController::class, 'archivesview'])->name('archivesview');
@@ -150,7 +150,7 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
     Route::get('/admitTAS/AdmittedEdit', [DashboardController::class, 'editAdmit'])->name('edit.admit');
     Route::post('/admitTAS/view-{id}/details/update', [DashboardController::class, 'updateStatusadmitted'])->name('updateStatusadmitted');
     Route::post('/admitTAS/view-{id}/details/finish-case', [DashboardController::class, 'finishCase_admitted'])->name('finishCase_admitted');
-    
+
     Route::get('/admitTAS/admit/details/{id}', [DashboardController::class, 'detailsadmitted'])->name('fetchingadmitted');
     //------------ MISSING UPDATE CASES
     Route::get('/admitTAS/edit', [DashboardController::class, 'updateAdmitted'])->name('update.admit.index');
@@ -162,7 +162,7 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
     Route::delete('/admitTAS/edit-{id}/violations/remove-attachment', [DashboardController::class, 'removeAttachmentadmitted'])->name('removeAttachmentadmitted');
     //                 ADMIT CASES ===============
 
-    // ====================tasFile 
+    // ====================tasFile
     Route::post('{id}/upload-file-contest', [DashboardController::class, 'uploadFileTas'])->name('upload.file.contest');
     Route::post('{id}/upload-file-admit', [DashboardController::class, 'uploadFileAdmit'])->name('upload.file.admit');
     Route::get('/contested/manageTAS', [DashboardController::class, 'tasManage'])->name('tas.manage');
@@ -183,7 +183,7 @@ Route::get('/data/filter', [UserController::class, 'filterData'])->name('data.fi
     Route::delete('/contested/edit/tasfile-{id}/view/details/deleteCase', [DashboardController::class, 'deleteTas'])->name('violations.delete');
     //     tasFile =============================
 
-    
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////ANALYTICS
@@ -197,7 +197,7 @@ Route::get('/api/pie-chart-data', [DashboardController::class, 'getPieChartData'
 
 
 Route::get('/api/date-received-data', [DashboardController::class, 'getDateReceivedData'])->name('bilangngmgakaso');
- 
+
 Route::get('/fetch-violations', [DashboardController::class, 'fetchViolations'])->name('damingmgakaso');
 
 
@@ -214,7 +214,7 @@ Route::get('/chat/{userId?}', [DashboardController::class, 'chatIndex'])->name('
 Route::post('/announcements', [UserController::class, 'storeAnnounce'])->name('announcements.store');
 
 Route::get('/user/{user}/messages', [UserController::class, 'getUserMessages']);
- 
+
 Route::get('/start-chat/{userId}', [UserController::class, 'startChat'])->name('chat.start');
 Route::get('/check-new-messages/{userId}',  [DashboardController::class, 'checkNewMessages'])->name('check.chat');
 
@@ -223,17 +223,17 @@ Route::get('/check-new-messages/{userId}',  [DashboardController::class, 'checkN
     /////////////////////////////////////                HISTORY             ///////////////////////////////////////////
     ///////////////////////////////////////////                        ///////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
- 
-  
+
+
     Route::get('/history', [UserController::class, 'admitTrail'])->name('audit.trail');
 
     Route::get('/admitted/{id}/filter/{filter?}', [UserController::class, 'show']);
     Route::get('/notifications', [UserController::class, 'getNotifications'])->name('notifications');
- 
+
 });
 
 
-Route::get('/subpoena', function () { 
+Route::get('/subpoena', function () {
     // Get the month parameter from the request, default to current month if not provided
 
     // $selectedMonth = $request->input('month', Carbon::now()->format('Y-m'));

@@ -5,7 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\TasFile;
+use Illuminate\Support\Facades\Auth;
 class admitted extends Model
+
 {
 
     protected $table = 'admitted_files';
@@ -27,7 +29,7 @@ class admitted extends Model
 public function logHistory($action, $changes)
 {
     $history = $this->history ?? [];
-    
+
     $history[] = [
         'action' => $action,
         'user_id' => Auth::id(), // Ensure Auth::id() returns the correct user ID
@@ -36,7 +38,7 @@ public function logHistory($action, $changes)
         'timestamp' => now()->toDateTimeString(),
         'changes' => $changes
     ];
-    
+
     $this->update(['history' => $history]); // Update 'history' attribute
 }
 

@@ -1,4 +1,4 @@
- 
+
 
 
 <div class="row mb-4">
@@ -50,7 +50,7 @@
             <td class="fw-bold">Case Status:</td>
             <td style="background-color: {{ getStatusColor($tasFile->status) }};">{{ $tasFile->status }}</td>
         </tr>
-        
+
         <tr>
             <td class="fw-bold">Type of Vehicle:</td>
             <td>{{ $tasFile->typeofvehicle }}</td>
@@ -59,15 +59,15 @@
             <td class="fw-bold">Record Status</td>
             <td class="{{ symbolBgColor($tasFile->symbols) }} text-white">{{ $tasFile->symbols }}</td>
         </tr>
-        
+
     </tbody>
 </table>
 
 
 </div>
 </div>
-  
- 
+
+
     </div>
 
     <div class="col-md-6">
@@ -129,7 +129,7 @@
                         $decodedFiles = json_decode($tasFile->file_attach, true);
                     @endphp
                     @if (!is_null($decodedFiles))
-                        <ol>
+                        <ol id="attachmentList">
                             @foreach ($decodedFiles as $filePath)
                                 <li>
                                     <i class="bi bi-paperclip me-1"></i>
@@ -147,13 +147,16 @@
                     @csrf
                     <div class="form-group">
                         <label for="file_attach">File Attachment</label>
-                        <input type="file" class="form-control" id="file_attach" name="file_attach" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"  multiple>
+                        <input type="file" class="form-control" id="file_attach" name="file_attach" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
                     </div>
                     <button type="submit" class="btn btn-primary">Upload File</button>
                 </form>
             </div>
         </div>
     </div>
+
+
+
 </div>
 
 
