@@ -17,13 +17,13 @@
         .header {
             display: flex;
             justify-content: center;
-            text-align: left; 
+            text-align: left;
             margin: 0;
             padding: 0;
         }
 
         .header-content {
-            max-width: 100%; 
+            max-width: 100%;
             margin: 0;
             padding: 0;
         }
@@ -37,7 +37,7 @@
             text-align: justify;
         }
         .content h3{
-           
+
             text-align: center;
         }
         .row {
@@ -199,7 +199,7 @@ input, textarea {
 
 
     <div class="container">
-        
+
         <span style='position:
             absolute;z-index:251657216;margin-left:-10px;margin-top:0px;width:82px;
             height:77px'><img width=82 height=77 src="{{asset('assets/img/bagong_pilipinas.png')}}"></span>
@@ -215,19 +215,26 @@ input, textarea {
                 <br><br><br>
             </div>
         </div>
-        
+
         <div class="content">
             <div class="row">
                 <div class="left"  contenteditable="true">
                     IN RE: MOTION TO RELEASE
                 </div>
-                <div class="right" style="margin-right: 18%;display: flex;" contenteditable="true">Case No. {{ $compactData['changes']['case_no'] }}</div>
+                <div class="right" style="margin-right: 18%;display: flex;" contenteditable="true">
+                @if(isset($compactData['changes']['case_no']))
+                    Case No. {{ $compactData['changes']['case_no'] }}
+                @elseif(isset($compactData['changes']['admittedno']))
+                    Case No. {{ $compactData['changes']['admittedno'] }}
+                @else
+                    Case No. Not Available
+                @endif</div>
             </div>
             <div class="row">
                 <div class="left"  style="font-weight:bold" contenteditable="true">
                     <div style="text-indent: 30px;">
                         <span id="carmake"> </span> WITH<br> &nbsp; &nbsp; &nbsp; &nbsp;Plate No. {{$compactData['changes']['plate_no']}} and<br> &nbsp; &nbsp; &nbsp; &nbsp;Mr/Mrs. {{ $compactData['changes']['driver'] }}
-                        
+
                     </div >
                 </div>
                 <div class="right" contenteditable="true">{{ $compactData['changes']['transaction_no'] }}</div>
@@ -237,7 +244,7 @@ input, textarea {
         <div class="content">
             <div class="row left" style="margin-left: 10%">
                 <p style='margin-left:3.0in;text-align: justify;' contenteditable="true">
-                    FOR: 
+                    FOR:
                 <br>
                 <?php $counter = 1; ?>
                     @if (!empty($compactData['relatedViolations']))
@@ -269,10 +276,10 @@ input, textarea {
             </div >
             <p><b><i>X-------------------------------X</i></b></p>
         </div>
-        
+
         <div class="content">
             <p style="font-family: 'Times New Roman', Times, serif; font-size:16pt; font-weight:bolder;text-align:center;text-decoration: underline;" contenteditable="true">RELEASE ORDER</p>
-            
+
             <p style="text-indent: 30px;" contenteditable="true">Before us is a Motion of the respondent to release above-described motor vehicle and driver’s license after paying the fines of the violations thereof as shown in the attached documents, to wit:</p>
             <div style="margin-left: 50px" contenteditable="true">
                 <ul>
@@ -286,11 +293,11 @@ input, textarea {
                         Registration Official Receipt No. <span id="rorno"> </span> dated <span id="rordate"></span>
                     </li>
                     <li>
-                        Official receipt of payment no. <span id="orpno"> </span>  dated <span id="orpdate"> </span> 
+                        Official receipt of payment no. <span id="orpno"> </span>  dated <span id="orpdate"> </span>
                     </li>
                     <li>
                         Storage fee official receipt no. <span id="srno"> </span>  dated <span id="srdate"> </span>
-                    </li>    
+                    </li>
                     <li>
                         MVIS Inspection Report No. <span id="mvirno"></span> dated <span id="mvirdate"></span> Paid under MR No. <span id="mrno"> </span> dated <span id="mrdate"></span>
                     </li>
@@ -302,7 +309,7 @@ input, textarea {
                     </li>
                 </ul>
             </div>
-        
+
             <p contenteditable="true">Finding the Motion to be meritorious and after the fines of the above-mentioned violations have been paid, the Motion to Release the subject Motor Vehicle and Driver’s License is hereby <span style="text-decoration: underline;"><b><i>GRANTED</i></b>.</span></p>
             <p contenteditable="true" style="text-indent: 30px;"><span style="font-weight:bolder;">WHEREFORE</span>, this Office orders the release of Driver’s License of <b>Mr. {{ $compactData['changes']['driver'] }}</b> and <b><span id="carmaket"></span></b> with Plate no. <b>{{$compactData['changes']['plate_no']}}</b></p>
             <p contenteditable="true" style="text-indent: 30px;font-weight:bolder;">SO ORDERED.</p>
@@ -320,7 +327,7 @@ input, textarea {
             const modal = document.getElementById('myModal');
             const openModalBtn = document.getElementById('openModalBtn');
             const closeBtn = document.getElementsByClassName('close')[0];
-        
+
             function formatDateToMMDDYYYY(date) {
             const d = new Date(date);
             const month = ('0' + (d.getMonth() + 1)).slice(-2);
@@ -332,7 +339,7 @@ input, textarea {
             openModalBtn.onclick = () => {
                 modal.style.display = 'block';
             }
-        
+
             function closeModal() {
                 modal.style.display = 'none';
                 alert('You can reopen the form by pressing Ctrl + Y');
@@ -341,20 +348,20 @@ input, textarea {
             closeBtn.onclick = () => {
                 closeModal();
             }
-        
+
             // Close the modal when clicking outside of it
             window.onclick = (event) => {
-                
+
                 if (event.target == modal) {
                     closeModal();
                 }
             }
-        
+
             // Handle form submission
             const form = document.getElementById('myForm');
             form.onsubmit = (event) => {
                 event.preventDefault();
-        
+
                 // Update span elements with form input values
                 document.getElementById('carmake').textContent = document.getElementById('carmakex').value;
                 document.getElementById('carmaket').textContent = document.getElementById('carmakex').value;
@@ -374,14 +381,14 @@ input, textarea {
                 document.getElementById('mrmvdate').textContent = formatDateToMMDDYYYY(document.getElementById('mrmvdatex').value);
                 document.getElementById('dateapp').textContent = formatDateToMMDDYYYY(document.getElementById('dateappx').value);
 
-        
+
                 // Close the modal after updating
                 modal.style.display = 'none';
-        
+
                 // Optionally, you can reset the form after submission
                 // form.reset();
             }
-        
+
             // Add event listener for the keyboard shortcut
             document.addEventListener('keydown', (event) => {
                 console.log('Key pressed:', event.key);
@@ -389,7 +396,7 @@ input, textarea {
                     openModalBtn.click();
                 }
             });
-    
+
             // Trigger the hidden button to open the modal for demonstration
             openModalBtn.click();
         });

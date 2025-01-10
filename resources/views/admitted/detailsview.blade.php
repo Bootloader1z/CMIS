@@ -1,4 +1,4 @@
- 
+
 
 <div class="row mb-4">
     <div class="col-md-6">
@@ -136,7 +136,7 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Upload Files</button>
                 </form>
-                
+
             </div>
         </div>
     </div>
@@ -144,7 +144,7 @@
 
 
 <div class="modal-footer">
-    <form action="{{ route('print.sub', ['id' => $admitted->id]) }}" method="GET" target="_blank">
+    <form action="{{ route('print.subadmit', ['id' => $admitted->id]) }}" method="GET" target="_blank">
 
         <button type="submit" class="btn btn-primary " name="details" value="motionrelease1">Manual MR</button>
         <button type="submit" class="btn btn-primary " name="details" value="motionrelease2">MR</button>

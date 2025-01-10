@@ -61,7 +61,7 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/officers/{departmentName}', [DashboardController::class, 'getByDepartmentName']);
 
-    Route::get('/documents/print/{id}', [DashboardController::class, 'printsub'])->name('print.sub');
+
     Route::get('/contested.cases/reports', [DashboardController::class, 'reportsview'])->name('filterByMonth');
 
     Route::get('/yearly-data/{year}', [DashboardController::class, 'showYearData'])->name('showYearData');
@@ -150,7 +150,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/admitTAS/AdmittedEdit', [DashboardController::class, 'editAdmit'])->name('edit.admit');
     Route::post('/admitTAS/view-{id}/details/update', [DashboardController::class, 'updateStatusadmitted'])->name('updateStatusadmitted');
     Route::post('/admitTAS/view-{id}/details/finish-case', [DashboardController::class, 'finishCase_admitted'])->name('finishCase_admitted');
-
+    Route::get('/admitTAS/view-{id}/details/documents/print', [DashboardController::class, 'printsubadmit'])->name('print.subadmit');
     Route::get('/admitTAS/admit/details/{id}', [DashboardController::class, 'detailsadmitted'])->name('fetchingadmitted');
     //------------ MISSING UPDATE CASES
     Route::get('/admitTAS/edit', [DashboardController::class, 'updateAdmitted'])->name('update.admit.index');
@@ -172,6 +172,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/contested/viewTAS/tasfile/details/save-remarks', [DashboardController::class, 'saveRemarks'])->name('save.remarks');
     Route::post('/contested/viewTAS/tasfile-{id}/details/update-status', [DashboardController::class, 'updateStatus'])->name('update.status');
     Route::post('/contested/viewTAS/tasfile-{id}/details/finish.case', [DashboardController::class, 'finishCase'])->name('finish.case');
+    Route::get('/contested/viewTAS/tasfile-{id}/details/documents/print', [DashboardController::class, 'printsub'])->name('print.sub');
     // -------------------------------- end of viewtas ------------------------------------------------------------------------------------
     Route::get('/contested/edit/view', [DashboardController::class, 'updateContest'])->name('update.contest.index');
     Route::get('/contested/edit/tasfile-{id}/view/details', [DashboardController::class, 'detailsedit'])->name('fetchingeditfile');

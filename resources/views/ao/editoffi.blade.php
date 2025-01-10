@@ -21,8 +21,8 @@
 @endif
 
 <main id="main" class="main">
-    
-    
+
+
 
     <section class="section">
         <div class="card">
@@ -90,7 +90,7 @@
 
         searchInput.addEventListener('keyup', function() {
             var filter = searchInput.value.toUpperCase();
-            
+
             // Loop through all table rows, and hide those who don't match the search query
             for (var i = 0; i < rows.length; i++) {
                 var officerCell = rows[i].getElementsByTagName('td')[0]; // Assuming first column is officer name
@@ -106,35 +106,58 @@
         });
     });
 </script>
+
 <script>
     const fetchViolationUrl = @json(route('fetchingofficer', ['id' => 'id']));
+
+    // Cache to store modal content and in-progress status
+    const modalCache = {};
+    const modalInProgress = {};
 
     document.querySelectorAll('.modal').forEach(modal => {
         modal.addEventListener('show.bs.modal', function (event) {
             var button = event.relatedTarget; // Button that triggered the modal
-            var modalId = modal.getAttribute('id').replace('exampleModal', ''); 
+            var modalId = modal.getAttribute('id').replace('exampleModal', '');
             var modalBody = modal.querySelector('.modal-body');
-            
-            // Generate the URL for fetching violation details
-            var fetchUrl = fetchViolationUrl.replace('id', modalId);
-            console.log(fetchUrl);
 
-            // Delay the fetch request by 1.5 seconds
-            setTimeout(() => {
-                // Fetch content for the modal via AJAX or a fetch request
-                fetch(fetchUrl)
-                    .then(response => response.text())
-                    .then(html => {
-                        modalBody.innerHTML = html;
-                    })
-                    .catch(err => {
-                        console.error('Failed to load modal content', err);
-                        modalBody.innerHTML = '<p>Error loading content</p>';
-                    });
-            }, 1500); // 1.5 seconds delay
+            // Check if the modal content is already cached
+            if (modalCache[modalId]) {
+                // If content is cached, use it directly
+                modalBody.innerHTML = modalCache[modalId];
+            } else if (!modalInProgress[modalId]) {
+                // If a request is not in progress, start a new fetch request
+                modalInProgress[modalId] = true;
+
+                // Generate the URL for fetching officer details (replace placeholder)
+                var fetchUrl = fetchViolationUrl.replace('id', modalId);
+                console.log('Fetching URL: ', fetchUrl);
+
+                // Delay the fetch request by 1.5 seconds
+                setTimeout(() => {
+                    // Fetch content for the modal via AJAX or a fetch request
+                    fetch(fetchUrl)
+                        .then(response => response.text())
+                        .then(html => {
+                            // Cache the fetched content
+                            modalCache[modalId] = html;
+
+                            // Set the modal content
+                            modalBody.innerHTML = html;
+                        })
+                        .catch(err => {
+                            console.error('Failed to load modal content', err);
+                            modalBody.innerHTML = '<p>Error loading content</p>';
+                        })
+                        .finally(() => {
+                            // Reset the in-progress flag after fetch is complete
+                            modalInProgress[modalId] = false;
+                        });
+                }, 1500); // 1.5 seconds delay
+            }
         });
     });
 </script>
+
 <!-- Initialize DataTables -->
 <script>
     $(document).ready(function () {

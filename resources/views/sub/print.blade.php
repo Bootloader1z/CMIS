@@ -17,13 +17,13 @@
         .header {
             display: flex;
             justify-content: center;
-            text-align: left; 
+            text-align: left;
             margin: 0;
             padding: 0;
         }
 
         .header-content {
-            max-width: 100%; 
+            max-width: 100%;
             margin: 0;
             padding: 0;
         }
@@ -37,7 +37,7 @@
             text-align: justify;
         }
         .content h3{
-           
+
             text-align: center;
         }
         .row {
@@ -93,7 +93,7 @@
 </head>
 <body>
     <div class="container">
-        
+
         <span style='position:
             absolute;z-index:251657216;margin-left:-10px;margin-top:0px;width:82px;
             height:77px'><img width=82 height=77 src="{{asset('assets/img/bagong_pilipinas.png')}}"></span>
@@ -109,17 +109,25 @@
                 <br><br><br>
             </div>
         </div>
-        
+
         <div class="content">
             <div class="row">
-                <div class="left" contenteditable="true">LTO – 
+                <div class="left" contenteditable="true">LTO –
                     <span contenteditable="true">
                         @foreach ($compactData['officers'] as $officer)
                             {{ $officer->department }}
                         @endforeach
-                    </span> 
+                    </span>
                     represented by</div>
-                <div class="right" style="margin-right: 18%;display: flex;" contenteditable="true">Case No. {{ $compactData['changes']['case_no'] }}</div>
+                <div class="right" style="margin-right: 18%;display: flex;" contenteditable="true">
+                    @if(isset($compactData['changes']['case_no']))
+                        Case No. {{ $compactData['changes']['case_no'] }}
+                    @elseif(isset($compactData['changes']['admittedno']))
+                        Case No. {{ $compactData['changes']['admittedno'] }}
+                    @else
+                        Case No. Not Available
+                    @endif
+                </div>
             </div>
             <div class="row">
                 <div class="left" style="font-weight:bold" contenteditable="true">{{ $compactData['changes']['apprehending_officer'] }}</div>
@@ -130,7 +138,7 @@
         <div class="content">
             <div class="row left" style="margin-left: 10%">
                 <p style='margin-left:3.0in;text-align: justify;' contenteditable="true">
-                    FOR: 
+                    FOR:
                 <br>
                 <?php $counter = 1; ?>
                     @if (!empty($compactData['relatedViolations']))
@@ -150,9 +158,9 @@
                 <br>
                 <p><b><i>X-------------------------------X</i></b></p>
             </div>
-            
+
         </div>
-        
+
         <div class="content">
             <p style="font-family: 'Times New Roman', Times, serif; font-size:16pt; font-weight:bolder;text-align:center" contenteditable="true">SUBPOENA</p>
             <p style="font-weight: bold" contenteditable="true">GREETINGS:</p>
@@ -160,13 +168,13 @@
             <p style="text-indent: 30px;" contenteditable="true">Failure to comply with the lawful order of this Office is tantamount to disobedience. As such, this Office will recommend the revocation of your Deputation Order.</p>
             <p contenteditable="true">{{$compactData['date']}} Quezon City Philippines.</p>
         </div>
-        
+
         <div class="signature">
             <p style="font-weight:bolder;" contenteditable="true">ATTY. ESTEBAN M. BALTAZAR JR. CESO V</p>
             <p style="margin-right: 10%;" contenteditable="true"><i>Director II Regional Director</i></p>
             <p style="margin-right: 8%;" contenteditable="true">Chief Traffic Adjudication Service</p>
         </div>
-        
+
         <div class="proof-of-service">
             <h4 contenteditable="true">Proof of Service</h4>
             <p contenteditable="true">This is to certify that notice of hearing has been duly served and received by:</p>

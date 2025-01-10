@@ -23,11 +23,6 @@
         {{ session('error') }}
     </div>
 @endif
-<link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
-{{-- <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.6/css/jquery.dataTables.css">
-<script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.6/js/jquery.dataTables.js" defer></script> --}}
-
 
     <section class="section">
       <div class="card">
@@ -324,52 +319,46 @@
                 method: 'POST',
                 body: formData
             })
-            .then(response => response.json()) // Corrected: parse the JSON response
+            .then(response => response.json())
             .then(data => {
-                if (data.status === 'success') {
+                if (data.success) {
                     // Update UI with newly uploaded file
                     const fileName = data.fileName; // Assuming the server returns the uploaded file name
-                    const filePath = data.filePath; // Assuming the server returns the file path
 
                     // Append new attachment to the list
                     const li = document.createElement('li');
                     li.innerHTML = `
                         <i class="bi bi-paperclip me-1"></i>
-                        <a href="${filePath}" target="_blank">${fileName}</a>
+                        <a href="${data.filePath}" target="_blank">${fileName}</a>
                     `;
                     attachmentList.appendChild(li);
-
-                    // Show success message with Toastr
-                    toastr.success('File uploaded successfully!', 'Success');
 
                     // Clear the file input field
                     uploadForm.reset();
                 } else {
                     // Handle error case
-                    console.error('File upload failed:', data.message);
-                    toastr.error('File upload failed: ' + data.message, 'Error');
+                    console.error('File upload failed:', data.error);
+                    alert('File upload failed: ' + data.error);
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                toastr.error('An error occurred while uploading the file.', 'Error');
+                alert('An error occurred while uploading the file.');
             });
         });
     });
 </script>
 
-
 <script>
-    // Ensure the script runs after the DOM is fully loaded
-    window.onload = function() {
+    document.addEventListener('DOMContentLoaded', function () {
         const uploadForm = document.getElementById('uploadForm');
         const attachmentList = document.getElementById('attachmentList');
 
-        if (uploadForm) {  // Ensure the form exists
+        // Ensure form exists before attaching event listener
+        if (uploadForm) {
             uploadForm.addEventListener('submit', function (event) {
-                event.preventDefault(); // Prevent the form from submitting normally
+                event.preventDefault();
 
-                // Create FormData object to send files
                 let formData = new FormData(uploadForm);
 
                 // Send AJAX request
@@ -377,42 +366,30 @@
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json()) // Corrected: parse the JSON response
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
                 .then(data => {
-                    if (data.status === 'success') {
-                        // Update UI with newly uploaded file
-                        const fileName = data.fileName; // Assuming the server returns the uploaded file name
-                        const filePath = data.filePath; // Assuming the server returns the file path
-
-                        // Append new attachment to the list
-                        const li = document.createElement('li');
-                        li.innerHTML = `
-                            <i class="bi bi-paperclip me-1"></i>
-                            <a href="${filePath}" target="_blank">${fileName}</a>
-                        `;
-                        attachmentList.appendChild(li);
-
-                        // Show success message with Toastr
-                        toastr.success('File uploaded successfully!', 'Success');
-
-                        // Redirect to the file path
-                        window.location.href = filePath; // Redirect to the uploaded file URL
-
-                        // Clear the file input field
-                        uploadForm.reset();
+                    // Check if the response contains a redirectUrl
+                    if (data.redirectUrl) {
+                        toastr.success('File uploaded successfully!');
+                        window.location.href = data.redirectUrl;
                     } else {
-                        // Handle error case
-                        console.error('File upload failed:', data.message);
-                        toastr.error('File upload failed: ' + data.message, 'Error');
+                        toastr.error('Invalid response from server.');
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    toastr.error('An error occurred while uploading the file.', 'Error');
+                    toastr.error('An error occurred while uploading the file.');
                 });
             });
+        } else {
+            console.error('Upload form not found.');
         }
-    }
+    });
 </script>
 
 

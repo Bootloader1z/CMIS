@@ -6,7 +6,7 @@
       <span class="visually-hidden">Loading...</span>
     </div>
     <strong>Loading...</strong>
-    
+
 </div>
 
     <div class="d-flex align-items-center justify-content-between">
@@ -24,7 +24,7 @@
               document.getElementById("horas").innerHTML = d.toLocaleTimeString();
           }
           </script>
-   
+
     <nav class="header-nav ms-auto">
       <ul class="d-flex align-items-center">
 
@@ -65,7 +65,7 @@
                 // Populate notifications dropdown
                 response.forEach(function(notification) {
                     var iconClass = getIconClass(notification.type); // Function to get icon class based on notification type
-                    
+
                     var createdAt = moment(notification.created_at).format('YYYY-MM-DD HH:mm:ss');
 
                     var html = '<li class="notification-item">';
@@ -74,7 +74,7 @@
                     html += '<h4>' + notification.model + '</h4>';
                     html += '<p>' + notification.description + '</p>';
                     html += '<p style="display:none;">' + notification.details + '</p>';
-                    html += '<p>By: ' + notification.user.fullname + '</p>';  
+                    html += '<p>By: ' + notification.user.fullname + '</p>';
                     html += '<p>' + createdAt + '</p>'; // Adjust timestamp as per your needs
                     html += '<p style="display:none;">' + notification.old_value + '</p>';
                     html += '<p style="display:none;">' + notification.new_value + '</p>';
@@ -117,10 +117,10 @@
         var timestamp = $(this).find('p:nth-of-type(4)').text().trim(); // Adjust selector for timestamp
         var old_value = $(this).find('p:nth-of-type(5)').text().trim(); // Adjust selector for old_value
         var new_value = $(this).find('p:nth-of-type(6)').text().trim(); // Adjust selector for new_value
-        
+
         var detailsText = $(this).find('p:nth-of-type(2)').text().trim();
         var details;
-        
+
         try {
             details = JSON.parse(detailsText); // Parse details as JSON object
         } catch (error) {
@@ -135,7 +135,7 @@
         tableHtml += '<tr><td>Description</td><td>' + description + '</td></tr>';
         tableHtml += '<tr><td>User</td><td>' + fullname + '</td></tr>';
         tableHtml += '<tr><td>Timestamp</td><td>' + timestamp + '</td></tr>';
-        
+
         if (details && typeof details === 'object' && Object.keys(details).length > 0) {
             // Display details as an ordered list
             tableHtml += '<tr><td>Details</td><td><ul>';

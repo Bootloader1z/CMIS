@@ -122,7 +122,7 @@
             <option value="in-progress" {{ $recentViolationsToday->status == 'in-progress' ? 'selected' : '' }}>In-Progress</option>
             <option value="closed" {{ $recentViolationsToday->status == 'closed' ? 'selected' : '' }}>Close Case</option>
             <option value="settled" {{ $recentViolationsToday->status == 'settled' ? 'selected' : '' }}>Settled</option>
-           
+
         </select>
     </td>
 </tr>
@@ -148,7 +148,7 @@
         </div>
     </div>
 
-  
+
     <hr>
 
     @php
@@ -182,7 +182,7 @@
             </div>
         </div>
     </div>
- 
+
 <!-- History section -->
 <div class="col-md-12">
     <h6 class="fw-bold mt-4">History</h6>

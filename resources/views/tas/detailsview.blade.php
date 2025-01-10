@@ -8,89 +8,83 @@
                 <h5 class="card-title mb-0">Case Information</h5>
             </div>
             <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-    <tbody>
-        <tr>
-            <td class="fw-bold" style="width: 30%;">Case No:</td>
-            <td>{{ $tasFile->case_no }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Driver:</td>
-            <td>{{ $tasFile->driver }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Contact No:</td>
-            <td>{{ $tasFile->contact_no }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">TOP:</td>
-            <td>{{ $tasFile->top ?? 'N/A' }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Transaction No:</td>
-            <td>{{ $tasFile->transaction_no ?? 'N/A' }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Received Date:</td>
-            <td>{{ $tasFile->date_received }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Plate No:</td>
-            <td>{{ $tasFile->plate_no }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Apprehending Officer:</td>
-            <td>{{ $tasFile->apprehending_officer ?? 'N/A' }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Date Recorded:</td>
-            <td>{{ $tasFile->created_at }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Case Status:</td>
-            <td style="background-color: {{ getStatusColor($tasFile->status) }};">{{ $tasFile->status }}</td>
-        </tr>
+                <table class="table table-bordered table-striped">
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold" style="width: 30%;">Case No:</td>
+                            <td>{{ $tasFile->case_no }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Driver:</td>
+                            <td>{{ $tasFile->driver }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Contact No:</td>
+                            <td>{{ $tasFile->contact_no }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">TOP:</td>
+                            <td>{{ $tasFile->top ?? 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Transaction No:</td>
+                            <td>{{ $tasFile->transaction_no ?? 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Received Date:</td>
+                            <td>{{ $tasFile->date_received }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Plate No:</td>
+                            <td>{{ $tasFile->plate_no }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Apprehending Officer:</td>
+                            <td>{{ $tasFile->apprehending_officer ?? 'N/A' }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Date Recorded:</td>
+                            <td>{{ $tasFile->created_at }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Case Status:</td>
+                            <td style="background-color: {{ getStatusColor($tasFile->status) }};">{{ $tasFile->status }}</td>
+                        </tr>
 
-        <tr>
-            <td class="fw-bold">Type of Vehicle:</td>
-            <td>{{ $tasFile->typeofvehicle }}</td>
-        </tr>
-        <tr>
-            <td class="fw-bold">Record Status</td>
-            <td class="{{ symbolBgColor($tasFile->symbols) }} text-white">{{ $tasFile->symbols }}</td>
-        </tr>
-
-    </tbody>
-</table>
-
-
-</div>
-</div>
-
-
-    </div>
-
-    <div class="col-md-6">
-    <div class="card border-0 shadow">
-        <div class="card-header">
-            <h5 class="card-title mb-0">Violation Details</h5>
-        </div>
-        <div class="card-body mt-3">
-            <div class="mb-4">
-                <h6 class="text-muted">Violations:</h6>
-                @if (isset($relatedViolations) && !is_array($relatedViolations) && $relatedViolations->count() > 0)
-                    <ul class="list-unstyled">
-                        @foreach ($relatedViolations as $violation)
-                            <li>{{ $violation->code }} - {{ $violation->violation }}</li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p>No violations recorded.</p>
-                @endif
+                        <tr>
+                            <td class="fw-bold">Type of Vehicle:</td>
+                            <td>{{ $tasFile->typeofvehicle }}</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">Record Status</td>
+                            <td class="{{ symbolBgColor($tasFile->symbols) }} text-white">{{ $tasFile->symbols }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
+    <div class="col-md-6">
+        <div class="card border-0 shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Violation Details</h5>
+            </div>
+            <div class="card-body mt-3">
+                <div class="mb-4">
+                    <h6 class="text-muted">Violations:</h6>
+                    @if (isset($relatedViolations) && !is_array($relatedViolations) && $relatedViolations->count() > 0)
+                        <ul class="list-unstyled">
+                            @foreach ($relatedViolations as $violation)
+                                <li>{{ $violation->code }} - {{ $violation->violation }}</li>
+                            @endforeach
+                        </ul>
+                    @else
+                        <p>No violations recorded.</p>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <div class="row mb-4">
@@ -143,7 +137,7 @@
                 @else
                     <p>No attachments available.</p>
                 @endif
-                <form id="uploadForm" action="{{ route('upload.file.contest', ['id' => $tasFile->id]) }}" method="POST" enctype="multipart/form-data">
+                <form id="uploadForm" action="{{ route('upload.file.contest', ['id' => $tasFile->id]) }}" method="POST" enctype="multipart/form-data" target="_self">
                     @csrf
                     <div class="form-group">
                         <label for="file_attach">File Attachment</label>
@@ -151,12 +145,10 @@
                     </div>
                     <button type="submit" class="btn btn-primary">Upload File</button>
                 </form>
+
             </div>
         </div>
     </div>
-
-
-
 </div>
 
 
